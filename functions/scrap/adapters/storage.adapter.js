@@ -1,11 +1,11 @@
 const { Storage } = require("@google-cloud/storage");
 
 class StorageAdapter {
-  bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+  bucketName = process.env.HOMEFY_FIREBASE_STORAGE_BUCKET;
 
   constructor() {
     this.storage = new Storage({
-      projectId: process.env.FIREBASE_PROJECT_ID,
+      projectId: process.env.HOMEFY_FIREBASE_PROJECT_ID,
     });
   }
 
