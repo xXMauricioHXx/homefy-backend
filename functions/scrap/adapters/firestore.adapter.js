@@ -21,6 +21,23 @@ class FirestoreAdapter {
     }
   }
 
+  async saveWithId(collectionName, id, data) {
+    try {
+      const docRef = this.db.collection(collectionName).doc(id);
+      await docRef.set(data);
+      console.log(
+        `[INFO] - Document saved to ${collectionName} with ID: ${id}`,
+      );
+      return id;
+    } catch (error) {
+      console.error(
+        `[ERROR] - Failed to save document to ${collectionName}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
   async findById(collectionName, id) {
     try {
       const docRef = this.db.collection(collectionName).doc(id);

@@ -18,6 +18,8 @@ const {
   AuthMiddleware,
 } = require("./infrastructure/middlewares/auth.middleware");
 
+const { CreatePdfUseCase } = require("./application/use-cases/create-pdf");
+
 const storageAdapter = new StorageAdapter();
 const httpAdapter = new HttpAdapter();
 const dewatermarkHttp = new DewatermarkHttp();
@@ -28,18 +30,21 @@ const foxterMapper = new FoxterMapper();
 const getPageContentUseCase = new GetPageContentUseCase(
   httpAdapter,
   foxterMapper,
-  firestoreAdapter,
 );
 
 const uploadImagesUseCase = new UploadImagesUseCase(
   dewatermarkHttp,
   storageAdapter,
   httpAdapter,
-  firestoreAdapter,
 );
 
 const getPdfByIdUseCase = new GetPdfByIdUseCase(firestoreAdapter);
 const getPdfsByUserIdUseCase = new GetPdfsByUserIdUseCase(firestoreAdapter);
+
+const createPdfUseCase = new CreatePdfUseCase(
+  uploadImagesUseCase,
+  firestoreAdapter,
+);
 
 const getPageContent = onRequest(
   { region: "us-central1" },
@@ -62,7 +67,6 @@ const getPageContent = onRequest(
         return res.status(400).json({ error: "URL é obrigatória" });
       }
       const userId = req.user.uid;
-      console.log("User ID:", userId);
 
       const result = await getPageContentUseCase.execute(url, userId);
 
@@ -84,6 +88,13 @@ const uploadImages = onRequest({ region: "us-central1" }, async (req, res) => {
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
     }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
 
     const { urls, pdfId } = req.body;
 
@@ -163,9 +174,35 @@ const getPdfsByUserId = onRequest(
   },
 );
 
+const createPdf = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const userId = req.user.uid;
+
+    const data = req.body;
+    const pdfData = await createPdfUseCase.execute(data, userId);
+
+    return res.status(200).json(pdfData);
+  } catch (error) {
+    console.error("Error to create PDF:", error);
+    return res.status(500).json({ error: "Erro ao criar PDF" });
+  }
+});
+
 module.exports = {
   getPageContent,
   uploadImages,
   getPdfById,
   getPdfsByUserId,
+  createPdf,
 };

@@ -1,14 +1,14 @@
 const { randomUUID } = require("crypto");
 
 class UploadImagesUseCase {
-  constructor(dewatermarkHttp, storageAdapter, http, firestoreAdapter) {
+  constructor(dewatermarkHttp, storageAdapter, http) {
     this.storageAdapter = storageAdapter;
     this.http = http;
     this.dewatermarkHttp = dewatermarkHttp;
-    this.firestoreAdapter = firestoreAdapter;
   }
 
   async execute(urls, pdfId) {
+    console.log("[START] - Uploading images");
     const imageBuffers = await this.getImageBuffer(urls);
     const validImageBuffers = imageBuffers.filter((image) => image !== null);
 
@@ -34,18 +34,7 @@ class UploadImagesUseCase {
       }),
     );
 
-    console.log("[INFO] - Updating Firestore document with image URLs");
-    const updateData = {
-      property: {
-        gallery: imageUrls,
-        mainImage: imageUrls[0] || "N/A",
-        sideImages: imageUrls.slice(0, 2),
-      },
-    };
-
-    await this.firestoreAdapter.setWithMerge("pdfs", pdfId, updateData);
-    console.log("[INFO] - Firestore document updated successfully");
-
+    console.log("[END] - Images uploaded successfully");
     return imageUrls;
   }
 

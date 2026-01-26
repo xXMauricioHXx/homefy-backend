@@ -48,7 +48,7 @@ class FoxterMapper {
           reference: product.code?.toString() || "N/A",
           mainImage,
           sideImages,
-          gallery: gallery.slice(0, 5),
+          gallery,
           features: product.features?.slice(0, 10) || [],
           infrastructures: product.developmentFeatures?.slice(0, 10) || [],
           area: product.areaPrivate || product.areaTotal || "N/A",

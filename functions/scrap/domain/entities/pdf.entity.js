@@ -5,6 +5,7 @@ class Pdf {
     this.userId = data.userId;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
+    this.pdfId = data.pdfId;
 
     this.validate();
   }
@@ -21,6 +22,10 @@ class Pdf {
     if (!this.userId) {
       throw new Error("User ID is required");
     }
+
+    if (!this.pdfId) {
+      throw new Error("PDF ID is required");
+    }
   }
 
   toFirestore() {
@@ -30,6 +35,7 @@ class Pdf {
       userId: this.userId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      pdfId: this.pdfId,
     };
   }
 }
