@@ -19,6 +19,7 @@ const {
 } = require("./infrastructure/middlewares/auth.middleware");
 
 const { CreatePdfUseCase } = require("./application/use-cases/create-pdf");
+const { CreateUserUseCase } = require("./application/use-cases/create-user");
 
 const storageAdapter = new StorageAdapter();
 const httpAdapter = new HttpAdapter();
@@ -45,6 +46,8 @@ const createPdfUseCase = new CreatePdfUseCase(
   uploadImagesUseCase,
   firestoreAdapter,
 );
+
+const createUserUseCase = new CreateUserUseCase(firestoreAdapter);
 
 const getPageContent = onRequest(
   { region: "us-central1" },
@@ -199,10 +202,55 @@ const createPdf = onRequest({ region: "us-central1" }, async (req, res) => {
   }
 });
 
+const createUser = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const { name, email, phone } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        error: "Name, email e phone são obrigatórios",
+      });
+    }
+
+    const userData = await createUserUseCase.execute({
+      id: req.user.uid,
+      name,
+      email,
+      phone,
+    });
+
+    return res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error to create user:", error);
+
+    if (error.message && error.message.includes("required")) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (error.message && error.message.includes("Invalid email")) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Erro ao criar usuário" });
+  }
+});
+
 module.exports = {
   getPageContent,
   uploadImages,
   getPdfById,
   getPdfsByUserId,
   createPdf,
+  createUser,
 };
