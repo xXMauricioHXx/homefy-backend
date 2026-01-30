@@ -3,6 +3,7 @@ class User {
     this.name = data.name;
     this.email = data.email;
     this.phone = data.phone;
+    this.photoUrl = data.photoUrl || null;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
     this.id = data.id;
@@ -39,6 +40,7 @@ class User {
       name: this.name,
       email: this.email,
       phone: this.phone,
+      photoUrl: this.photoUrl,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

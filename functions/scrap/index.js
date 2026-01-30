@@ -20,6 +20,14 @@ const {
 
 const { CreatePdfUseCase } = require("./application/use-cases/create-pdf");
 const { CreateUserUseCase } = require("./application/use-cases/create-user");
+const { UpdateUserUseCase } = require("./application/use-cases/update-user");
+const {
+  GetUserByIdUseCase,
+} = require("./application/use-cases/get-user-by-id");
+const { UpdatePdfUseCase } = require("./application/use-cases/update-pdf");
+const {
+  UpdateUserPhotoUseCase,
+} = require("./application/use-cases/update-user-photo");
 
 const storageAdapter = new StorageAdapter();
 const httpAdapter = new HttpAdapter();
@@ -48,6 +56,14 @@ const createPdfUseCase = new CreatePdfUseCase(
 );
 
 const createUserUseCase = new CreateUserUseCase(firestoreAdapter);
+
+const updateUserUseCase = new UpdateUserUseCase(firestoreAdapter);
+
+const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
+
+const updatePdfUseCase = new UpdatePdfUseCase(firestoreAdapter);
+
+const updateUserPhotoUseCase = new UpdateUserPhotoUseCase(firestoreAdapter);
 
 const getPageContent = onRequest(
   { region: "us-central1" },
@@ -246,6 +262,183 @@ const createUser = onRequest({ region: "us-central1" }, async (req, res) => {
   }
 });
 
+const updateUser = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    if (req.method !== "PUT") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const userId = req.user.uid;
+    const { name, email, phone } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        error: "Name, email e phone são obrigatórios",
+      });
+    }
+
+    const userData = await updateUserUseCase.execute(userId, {
+      name,
+      email,
+      phone,
+    });
+
+    return res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error to update user:", error);
+
+    if (error.message && error.message.includes("not found")) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    if (error.message && error.message.includes("required")) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (error.message && error.message.includes("Invalid email")) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (error.message && error.message.includes("Unauthorized")) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Erro ao atualizar usuário" });
+  }
+});
+
+const getUserById = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    if (req.method !== "GET") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const userId = req.user.uid;
+
+    const userData = await getUserByIdUseCase.execute(userId);
+
+    return res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error to get user by ID:", error);
+
+    if (error.message && error.message.includes("not found")) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    if (error.message && error.message.includes("Unauthorized")) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    return res.status(500).json({ error: "Erro ao buscar usuário" });
+  }
+});
+
+const updatePdf = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    if (req.method !== "PUT") {
+      return res.status(405).send("Method Not Allowed");
+    }
+
+    await new Promise((resolve, reject) => {
+      authMiddleware.verifyToken(req, res, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const { pdfId, config } = req.body;
+
+    if (!pdfId) {
+      return res.status(400).json({ error: "PDF ID é obrigatório" });
+    }
+
+    if (!config) {
+      return res.status(400).json({ error: "Config é obrigatório" });
+    }
+
+    const pdfData = await updatePdfUseCase.execute(pdfId, config);
+
+    return res.status(200).json(pdfData);
+  } catch (error) {
+    console.error("Error to update PDF config:", error);
+
+    if (error.message && error.message.includes("not found")) {
+      return res.status(404).json({ error: "PDF não encontrado" });
+    }
+
+    if (error.message && error.message.includes("Unauthorized")) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    return res
+      .status(500)
+      .json({ error: "Erro ao atualizar configuração do PDF" });
+  }
+});
+
+const updateUserPhoto = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      if (req.method !== "PUT") {
+        return res.status(405).send("Method Not Allowed");
+      }
+
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+
+      const userId = req.user.uid;
+      const { photoUrl } = req.body;
+
+      if (!photoUrl) {
+        return res.status(400).json({
+          error: "Photo URL é obrigatória",
+        });
+      }
+
+      const userData = await updateUserPhotoUseCase.execute(userId, photoUrl);
+
+      return res.status(200).json(userData);
+    } catch (error) {
+      console.error("Error to update user photo:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      if (error.message && error.message.includes("required")) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("Unauthorized")) {
+        return res.status(401).json({ error: error.message });
+      }
+
+      return res
+        .status(500)
+        .json({ error: "Erro ao atualizar foto do usuário" });
+    }
+  },
+);
+
 module.exports = {
   getPageContent,
   uploadImages,
@@ -253,4 +446,8 @@ module.exports = {
   getPdfsByUserId,
   createPdf,
   createUser,
+  updateUser,
+  getUserById,
+  updatePdf,
+  updateUserPhoto,
 };

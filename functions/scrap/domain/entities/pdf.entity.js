@@ -6,6 +6,7 @@ class Pdf {
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
     this.pdfId = data.pdfId;
+    this.config = data.config || null;
 
     this.validate();
   }
@@ -36,6 +37,7 @@ class Pdf {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       pdfId: this.pdfId,
+      config: this.config,
     };
   }
 }
