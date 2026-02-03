@@ -69,7 +69,7 @@ const updatePdfUseCase = new UpdatePdfUseCase(firestoreAdapter);
 const updateUserPhotoUseCase = new UpdateUserPhotoUseCase(firestoreAdapter);
 
 const getPageContent = onRequest(
-  { region: "us-central1" },
+  { region: "us-central1", cors: true },
   async (req, res) => {
     try {
       if (req.method !== "POST") {
@@ -112,66 +112,72 @@ const getPageContent = onRequest(
   },
 );
 
-const uploadImages = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).send("Method Not Allowed");
-    }
+const uploadImages = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") {
+        return res.status(405).send("Method Not Allowed");
+      }
 
-    await new Promise((resolve, reject) => {
-      authMiddleware.verifyToken(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
       });
-    });
 
-    const { urls, pdfId } = req.body;
+      const { urls, pdfId } = req.body;
 
-    if (!urls.length) {
-      return res.status(400).json({ error: "URLs é obrigatória" });
+      if (!urls.length) {
+        return res.status(400).json({ error: "URLs é obrigatória" });
+      }
+
+      if (!pdfId) {
+        return res.status(400).json({ error: "PDF ID é obrigatório" });
+      }
+
+      const data = await uploadImagesUseCase.execute(urls, pdfId);
+
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error("Error to try upload images:", error);
+      return res.status(500).json({ error: "Error to try upload images" });
     }
+  },
+);
 
-    if (!pdfId) {
-      return res.status(400).json({ error: "PDF ID é obrigatório" });
+const getPdfById = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "GET") {
+        return res.status(405).send("Method Not Allowed");
+      }
+
+      const { pdfId } = req.query;
+
+      if (!pdfId) {
+        return res.status(400).json({ error: "PDF ID é obrigatório" });
+      }
+
+      const pdfData = await getPdfByIdUseCase.execute(pdfId);
+
+      return res.status(200).json(pdfData);
+    } catch (error) {
+      console.error("Error to get PDF by ID:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "PDF não encontrado" });
+      }
+
+      return res.status(500).json({ error: "Erro ao buscar PDF" });
     }
-
-    const data = await uploadImagesUseCase.execute(urls, pdfId);
-
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error("Error to try upload images:", error);
-    return res.status(500).json({ error: "Error to try upload images" });
-  }
-});
-
-const getPdfById = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "GET") {
-      return res.status(405).send("Method Not Allowed");
-    }
-
-    const { pdfId } = req.query;
-
-    if (!pdfId) {
-      return res.status(400).json({ error: "PDF ID é obrigatório" });
-    }
-
-    const pdfData = await getPdfByIdUseCase.execute(pdfId);
-
-    return res.status(200).json(pdfData);
-  } catch (error) {
-    console.error("Error to get PDF by ID:", error);
-
-    if (error.message && error.message.includes("not found")) {
-      return res.status(404).json({ error: "PDF não encontrado" });
-    }
-
-    return res.status(500).json({ error: "Erro ao buscar PDF" });
-  }
-});
+  },
+);
 
 const getPdfsByUserId = onRequest(
-  { region: "us-central1" },
+  { region: "us-central1", cors: true },
   async (req, res) => {
     try {
       if (req.method !== "GET") {
@@ -203,39 +209,9 @@ const getPdfsByUserId = onRequest(
   },
 );
 
-const createPdf = onRequest({ region: "us-central1" }, async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
-  }
-
-  await new Promise((resolve, reject) => {
-    authMiddleware.verifyToken(req, res, (error) => {
-      if (error) reject(error);
-      else resolve();
-    });
-  });
-
-  const userId = req.user.uid;
-
-  const data = req.body;
-
-  try {
-    const pdfData = await createPdfUseCase.execute(data, userId);
-    return res.status(200).json(pdfData);
-  } catch (error) {
-    if (error instanceof NoCreditsAvailableException) {
-      return res.status(400).json({ error: error.message, code: error.code });
-    }
-
-    console.error("Error to create PDF:", error);
-    return res
-      .status(500)
-      .json({ error: "Erro ao criar PDF", code: "Unexpected exception" });
-  }
-});
-
-const createUser = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
+const createPdf = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
     }
@@ -247,167 +223,212 @@ const createUser = onRequest({ region: "us-central1" }, async (req, res) => {
       });
     });
 
-    const { name, email, phone } = req.body;
-
-    if (!name || !email || !phone) {
-      return res.status(400).json({
-        error: "Name, email e phone são obrigatórios",
-      });
-    }
-
-    const userData = await createUserUseCase.execute({
-      id: req.user.uid,
-      name,
-      email,
-      phone,
-    });
-
-    return res.status(200).json(userData);
-  } catch (error) {
-    console.error("Error to create user:", error);
-
-    if (error.message && error.message.includes("required")) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    if (error.message && error.message.includes("Invalid email")) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.status(500).json({ error: "Erro ao criar usuário" });
-  }
-});
-
-const updateUser = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "PUT") {
-      return res.status(405).send("Method Not Allowed");
-    }
-
-    await new Promise((resolve, reject) => {
-      authMiddleware.verifyToken(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
-      });
-    });
-
-    const userId = req.user.uid;
-    const { name, email, phone } = req.body;
-
-    if (!name || !email || !phone) {
-      return res.status(400).json({
-        error: "Name, email e phone são obrigatórios",
-      });
-    }
-
-    const userData = await updateUserUseCase.execute(userId, {
-      name,
-      email,
-      phone,
-    });
-
-    return res.status(200).json(userData);
-  } catch (error) {
-    console.error("Error to update user:", error);
-
-    if (error.message && error.message.includes("not found")) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
-    }
-
-    if (error.message && error.message.includes("required")) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    if (error.message && error.message.includes("Invalid email")) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    if (error.message && error.message.includes("Unauthorized")) {
-      return res.status(401).json({ error: error.message });
-    }
-
-    return res.status(500).json({ error: "Erro ao atualizar usuário" });
-  }
-});
-
-const getUserById = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "GET") {
-      return res.status(405).send("Method Not Allowed");
-    }
-
-    await new Promise((resolve, reject) => {
-      authMiddleware.verifyToken(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
-      });
-    });
-
     const userId = req.user.uid;
 
-    const userData = await getUserByIdUseCase.execute(userId);
+    const data = req.body;
 
-    return res.status(200).json(userData);
-  } catch (error) {
-    console.error("Error to get user by ID:", error);
+    try {
+      const pdfData = await createPdfUseCase.execute(data, userId);
+      return res.status(200).json(pdfData);
+    } catch (error) {
+      if (error instanceof NoCreditsAvailableException) {
+        return res.status(400).json({ error: error.message, code: error.code });
+      }
 
-    if (error.message && error.message.includes("not found")) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
+      console.error("Error to create PDF:", error);
+      return res
+        .status(500)
+        .json({ error: "Erro ao criar PDF", code: "Unexpected exception" });
     }
+  },
+);
 
-    if (error.message && error.message.includes("Unauthorized")) {
-      return res.status(401).json({ error: error.message });
-    }
+const createUser = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") {
+        return res.status(405).send("Method Not Allowed");
+      }
 
-    return res.status(500).json({ error: "Erro ao buscar usuário" });
-  }
-});
-
-const updatePdf = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "PUT") {
-      return res.status(405).send("Method Not Allowed");
-    }
-
-    await new Promise((resolve, reject) => {
-      authMiddleware.verifyToken(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
       });
-    });
 
-    const { pdfId, config } = req.body;
+      const { name, email, phone } = req.body;
 
-    if (!pdfId) {
-      return res.status(400).json({ error: "PDF ID é obrigatório" });
+      if (!name || !email || !phone) {
+        return res.status(400).json({
+          error: "Name, email e phone são obrigatórios",
+        });
+      }
+
+      const userData = await createUserUseCase.execute({
+        id: req.user.uid,
+        name,
+        email,
+        phone,
+      });
+
+      return res.status(200).json(userData);
+    } catch (error) {
+      console.error("Error to create user:", error);
+
+      if (error.message && error.message.includes("required")) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("Invalid email")) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.status(500).json({ error: "Erro ao criar usuário" });
     }
+  },
+);
 
-    if (!config) {
-      return res.status(400).json({ error: "Config é obrigatório" });
+const updateUser = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "PUT") {
+        return res.status(405).send("Method Not Allowed");
+      }
+
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+
+      const userId = req.user.uid;
+      const { name, email, phone } = req.body;
+
+      if (!name || !email || !phone) {
+        return res.status(400).json({
+          error: "Name, email e phone são obrigatórios",
+        });
+      }
+
+      const userData = await updateUserUseCase.execute(userId, {
+        name,
+        email,
+        phone,
+      });
+
+      return res.status(200).json(userData);
+    } catch (error) {
+      console.error("Error to update user:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      if (error.message && error.message.includes("required")) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("Invalid email")) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("Unauthorized")) {
+        return res.status(401).json({ error: error.message });
+      }
+
+      return res.status(500).json({ error: "Erro ao atualizar usuário" });
     }
+  },
+);
 
-    const pdfData = await updatePdfUseCase.execute(pdfId, config);
+const getUserById = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "GET") {
+        return res.status(405).send("Method Not Allowed");
+      }
 
-    return res.status(200).json(pdfData);
-  } catch (error) {
-    console.error("Error to update PDF config:", error);
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
 
-    if (error.message && error.message.includes("not found")) {
-      return res.status(404).json({ error: "PDF não encontrado" });
+      const userId = req.user.uid;
+
+      const userData = await getUserByIdUseCase.execute(userId);
+
+      return res.status(200).json(userData);
+    } catch (error) {
+      console.error("Error to get user by ID:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      if (error.message && error.message.includes("Unauthorized")) {
+        return res.status(401).json({ error: error.message });
+      }
+
+      return res.status(500).json({ error: "Erro ao buscar usuário" });
     }
+  },
+);
 
-    if (error.message && error.message.includes("Unauthorized")) {
-      return res.status(401).json({ error: error.message });
+const updatePdf = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "PUT") {
+        return res.status(405).send("Method Not Allowed");
+      }
+
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+
+      const { pdfId, config } = req.body;
+
+      if (!pdfId) {
+        return res.status(400).json({ error: "PDF ID é obrigatório" });
+      }
+
+      if (!config) {
+        return res.status(400).json({ error: "Config é obrigatório" });
+      }
+
+      const pdfData = await updatePdfUseCase.execute(pdfId, config);
+
+      return res.status(200).json(pdfData);
+    } catch (error) {
+      console.error("Error to update PDF config:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "PDF não encontrado" });
+      }
+
+      if (error.message && error.message.includes("Unauthorized")) {
+        return res.status(401).json({ error: error.message });
+      }
+
+      return res
+        .status(500)
+        .json({ error: "Erro ao atualizar configuração do PDF" });
     }
-
-    return res
-      .status(500)
-      .json({ error: "Erro ao atualizar configuração do PDF" });
-  }
-});
+  },
+);
 
 const updateUserPhoto = onRequest(
-  { region: "us-central1" },
+  { region: "us-central1", cors: true },
   async (req, res) => {
     try {
       if (req.method !== "PUT") {
