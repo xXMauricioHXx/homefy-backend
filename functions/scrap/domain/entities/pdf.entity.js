@@ -3,8 +3,8 @@ class Pdf {
     this.brand = data.brand;
     this.property = data.property;
     this.userId = data.userId;
-    this.createdAt = data.createdAt || new Date();
-    this.updatedAt = data.updatedAt || new Date();
+    this.createdAt = data.createdAt?.toDate() || new Date();
+    this.updatedAt = data.updatedAt?.toDate() || new Date();
     this.pdfId = data.pdfId;
     this.config = data.config || null;
 

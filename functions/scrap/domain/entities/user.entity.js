@@ -8,13 +8,13 @@ class User {
     this.email = data.email;
     this.phone = data.phone;
     this.photoUrl = data.photoUrl || null;
-    this.createdAt = data.createdAt.toDate() || new Date();
-    this.updatedAt = data.updatedAt.toDate() || new Date();
+    this.createdAt = data.createdAt?.toDate() || new Date();
+    this.updatedAt = data.updatedAt?.toDate() || new Date();
     this.id = data.id;
     this.plan = {
       name: data.plan.name,
       credits: data.plan.credits,
-      expiresAt: data.plan.expiresAt.toDate(),
+      expiresAt: data.plan.expiresAt?.toDate(),
     };
 
     this.validate();
