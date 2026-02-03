@@ -1,6 +1,11 @@
+const cheerio = require("cheerio");
+
 class FoxterMapper {
   map(html) {
     try {
+      // Carrega o HTML no Cheerio para extração de dados
+      const $ = cheerio.load(html);
+
       const scriptMatch = html.match(
         /<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s,
       );
@@ -31,8 +36,11 @@ class FoxterMapper {
       const mainImage = gallery[0] || "N/A";
       const sideImages = gallery.slice(1, 3);
 
-      const parkingMatch = product.bedrooms?.match(/(\d+)\s*vaga/i);
-      const parking = parkingMatch ? parkingMatch[1] : "N/A";
+      // Extrai dormitórios, banheiros, vagas e preço/m² do HTML usando Cheerio
+      const bedrooms = FoxterMapper.extractBedrooms($);
+      const bathrooms = FoxterMapper.extractBathrooms($);
+      const parking = FoxterMapper.extractParking($);
+      const pricePerSqm = FoxterMapper.extractPricePerSqm($);
 
       const city = FoxterMapper.getCity(product);
 
@@ -52,10 +60,13 @@ class FoxterMapper {
           features: product.features?.slice(0, 10) || [],
           infrastructures: product.developmentFeatures?.slice(0, 10) || [],
           area: product.areaPrivate || product.areaTotal || "N/A",
+          bedrooms,
+          bathrooms,
           condominium: product.condominiumAmountValue || "N/A",
           parking,
           iptu: product.iptu || "N/A",
           price: FoxterMapper.formatPrice(product.saleValue),
+          pricePerSqm,
         },
       };
 
@@ -79,10 +90,13 @@ class FoxterMapper {
           features: [],
           infrastructures: [],
           area: "N/A",
+          bedrooms: "N/A",
+          bathrooms: "N/A",
           condominium: "N/A",
           parking: "N/A",
           iptu: "N/A",
           price: "N/A",
+          pricePerSqm: "N/A",
         },
       };
     }
@@ -108,6 +122,74 @@ class FoxterMapper {
     const name = product.h1 || product.title || "N/A";
 
     return name.split("-")[1].trim();
+  }
+
+  static extractBedrooms($) {
+    // Procura no #product-characteristics por texto que contenha "dorm"
+    const characteristics = $("#product-characteristics");
+    let bedrooms = "N/A";
+
+    characteristics.find(".flex").each((i, elem) => {
+      const text = $(elem).text().trim();
+      const match = text.match(/(\d+)\s*dorm/i);
+      if (match) {
+        bedrooms = match[1];
+        return false; // break
+      }
+    });
+
+    return bedrooms;
+  }
+
+  static extractBathrooms($) {
+    // Procura no #product-characteristics por texto que contenha "banheiro"
+    const characteristics = $("#product-characteristics");
+    let bathrooms = "N/A";
+
+    characteristics.find(".flex").each((i, elem) => {
+      const text = $(elem).text().trim();
+      const match = text.match(/(\d+)\s*banheiro/i);
+      if (match) {
+        bathrooms = match[1];
+        return false; // break
+      }
+    });
+
+    return bathrooms;
+  }
+
+  static extractParking($) {
+    // Procura no #product-characteristics por texto que contenha "vaga"
+    const characteristics = $("#product-characteristics");
+    let parking = "N/A";
+
+    characteristics.find(".flex").each((i, elem) => {
+      const text = $(elem).text().trim();
+      const match = text.match(/(\d+)\s*vaga/i);
+      if (match) {
+        parking = match[1];
+        return false; // break
+      }
+    });
+
+    return parking;
+  }
+
+  static extractPricePerSqm($) {
+    // Procura no #product-characteristics por texto que contenha "R$ ... /m²"
+    const characteristics = $("#product-characteristics");
+    let pricePerSqm = "N/A";
+
+    characteristics.find(".flex").each((i, elem) => {
+      const text = $(elem).text().trim();
+      const match = text.match(/R\$\s*([\d.,]+)\s*\/m²/i);
+      if (match) {
+        pricePerSqm = `R$ ${match[1]}/m²`;
+        return false; // break
+      }
+    });
+
+    return pricePerSqm;
   }
 }
 

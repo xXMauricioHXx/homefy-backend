@@ -18,7 +18,11 @@ class GetPdfByIdUseCase {
 
       delete pdfData.userId;
 
-      return pdfData;
+      return {
+        ...pdfData,
+        createdAt: pdfData.createdAt.toDate(),
+        updatedAt: pdfData.updatedAt.toDate(),
+      };
     } catch (error) {
       console.error(`[ERROR] - Failed to fetch PDF with ID ${pdfId}:`, error);
       throw error;

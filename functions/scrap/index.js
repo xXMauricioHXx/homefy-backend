@@ -1,6 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { HttpAdapter } = require("./adapters/http.adapter");
-const { FoxterMapper } = require("./application/mappers/foxter-mapper");
+const { MapperFactory } = require("./application/factories/mapper-factory");
 const {
   GetPageContentUseCase,
 } = require("./application/use-cases/get-page-content");
@@ -28,6 +28,9 @@ const { UpdatePdfUseCase } = require("./application/use-cases/update-pdf");
 const {
   UpdateUserPhotoUseCase,
 } = require("./application/use-cases/update-user-photo");
+const {
+  NoCreditsAvailableException,
+} = require("./domain/exceptions/no-credits-available.exception");
 
 const storageAdapter = new StorageAdapter();
 const httpAdapter = new HttpAdapter();
@@ -35,10 +38,10 @@ const dewatermarkHttp = new DewatermarkHttp();
 const firestoreAdapter = new FirestoreAdapter();
 const authMiddleware = new AuthMiddleware();
 
-const foxterMapper = new FoxterMapper();
+const mapperFactory = new MapperFactory();
 const getPageContentUseCase = new GetPageContentUseCase(
   httpAdapter,
-  foxterMapper,
+  mapperFactory,
 );
 
 const uploadImagesUseCase = new UploadImagesUseCase(
@@ -49,17 +52,17 @@ const uploadImagesUseCase = new UploadImagesUseCase(
 
 const getPdfByIdUseCase = new GetPdfByIdUseCase(firestoreAdapter);
 const getPdfsByUserIdUseCase = new GetPdfsByUserIdUseCase(firestoreAdapter);
+const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
 
 const createPdfUseCase = new CreatePdfUseCase(
   uploadImagesUseCase,
   firestoreAdapter,
+  getUserByIdUseCase,
 );
 
 const createUserUseCase = new CreateUserUseCase(firestoreAdapter);
 
 const updateUserUseCase = new UpdateUserUseCase(firestoreAdapter);
-
-const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
 
 const updatePdfUseCase = new UpdatePdfUseCase(firestoreAdapter);
 
@@ -95,6 +98,13 @@ const getPageContent = onRequest(
 
       if (error.message && error.message.includes("Unauthorized")) {
         return res.status(401).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("Nenhum mapper encontrado")) {
+        return res.status(400).json({
+          error: "URL não suportada",
+          message: error.message,
+        });
       }
 
       return res.status(500).json({ error: "Error to try scrap URL" });
@@ -194,27 +204,33 @@ const getPdfsByUserId = onRequest(
 );
 
 const createPdf = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).send("Method Not Allowed");
-    }
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
+  }
 
-    await new Promise((resolve, reject) => {
-      authMiddleware.verifyToken(req, res, (error) => {
-        if (error) reject(error);
-        else resolve();
-      });
+  await new Promise((resolve, reject) => {
+    authMiddleware.verifyToken(req, res, (error) => {
+      if (error) reject(error);
+      else resolve();
     });
+  });
 
-    const userId = req.user.uid;
+  const userId = req.user.uid;
 
-    const data = req.body;
+  const data = req.body;
+
+  try {
     const pdfData = await createPdfUseCase.execute(data, userId);
-
     return res.status(200).json(pdfData);
   } catch (error) {
+    if (error instanceof NoCreditsAvailableException) {
+      return res.status(400).json({ error: error.message, code: error.code });
+    }
+
     console.error("Error to create PDF:", error);
-    return res.status(500).json({ error: "Erro ao criar PDF" });
+    return res
+      .status(500)
+      .json({ error: "Erro ao criar PDF", code: "Unexpected exception" });
   }
 });
 

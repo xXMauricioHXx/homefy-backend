@@ -103,28 +103,6 @@ class FirestoreAdapter {
     }
   }
 
-  async findById(collectionName, id) {
-    try {
-      const docRef = this.db.collection(collectionName).doc(id);
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        return null;
-      }
-
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
-    } catch (error) {
-      console.error(
-        `[ERROR] - Failed to find document in ${collectionName}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
   async findByUserId(collectionName, userId) {
     try {
       const snapshot = await this.db

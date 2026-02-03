@@ -1,5 +1,3 @@
-const fs = require("fs");
-
 class DewatermarkHttp {
   constructor() {
     this.apiKey = process.env.DEWATERMARK_API_KEY;

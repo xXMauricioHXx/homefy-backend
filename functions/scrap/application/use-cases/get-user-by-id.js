@@ -1,3 +1,5 @@
+const { User } = require("../../domain/entities/user.entity");
+
 class GetUserByIdUseCase {
   constructor(firestoreAdapter) {
     this.firestoreAdapter = firestoreAdapter;
@@ -13,7 +15,8 @@ class GetUserByIdUseCase {
     }
 
     console.log("[INFO] - User found with ID:", userId);
-    return user;
+
+    return new User(user);
   }
 }
 

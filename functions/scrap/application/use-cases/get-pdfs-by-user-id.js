@@ -13,7 +13,14 @@ class GetPdfsByUserIdUseCase {
         `[END] - Retrieved ${pdfs.length} PDFs for user ID: ${userId}`,
       );
 
-      return pdfs;
+      return pdfs.map((pdf) => {
+        return {
+          id: pdf.id,
+          ...pdf,
+          createdAt: pdf.createdAt.toDate(),
+          updatedAt: pdf.updatedAt.toDate(),
+        };
+      });
     } catch (error) {
       console.error(
         `[ERROR] - Failed to fetch PDFs for user ID ${userId}:`,

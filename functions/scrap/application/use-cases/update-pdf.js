@@ -3,7 +3,7 @@ class UpdatePdfUseCase {
     this.firestoreAdapter = firestoreAdapter;
   }
 
-  async execute(pdfId, configData) {
+  async execute(pdfId, data) {
     console.log("[START] - Updating PDF config");
 
     // Verify if PDF exists
@@ -13,14 +13,27 @@ class UpdatePdfUseCase {
       throw new Error("PDF not found");
     }
 
+    console.log(data);
+
     console.log("[INFO] - Updating PDF config in Firestore");
-    await this.firestoreAdapter.update("pdfs", pdfId, { config: configData });
+    await this.firestoreAdapter.update("pdfs", pdfId, {
+      property: {
+        ...existingPdf.property,
+        ...(data.propertyData && { ...data.propertyData }),
+      },
+      config: {
+        colors: {
+          ...existingPdf?.config?.colors,
+          ...(data?.colors && { ...data.colors }),
+        },
+      },
+    });
 
     console.log("[INFO] - PDF config updated successfully with ID:", pdfId);
     return {
       id: pdfId,
       ...existingPdf,
-      config: configData,
+      config: data.config,
       updatedAt: new Date(),
     };
   }
