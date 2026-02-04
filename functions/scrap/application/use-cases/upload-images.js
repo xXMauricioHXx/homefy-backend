@@ -15,11 +15,12 @@ class UploadImagesUseCase {
     const imageUrls = await Promise.all(
       validImageBuffers.map(async (data) => {
         const { buffer, contentType } = data;
+        let cleanedBuffer = buffer;
 
-        // console.log("[INFO] - Starting remove water mark");
-        // const cleanedBuffer =
-        //   await this.dewatermarkHttp.removeWaterMark(buffer);
-        const cleanedBuffer = buffer;
+        if (process.env.ENABLE_DEWATERMARK === "true") {
+          console.log("[INFO] - Starting remove water mark");
+          cleanedBuffer = await this.dewatermarkHttp.removeWaterMark(buffer);
+        }
 
         console.log(`[INFO] - Upload image to storage`);
 
