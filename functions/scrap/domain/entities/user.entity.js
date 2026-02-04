@@ -11,13 +11,23 @@ class User {
     this.createdAt = data.createdAt?.toDate() || new Date();
     this.updatedAt = data.updatedAt?.toDate() || new Date();
     this.id = data.id;
-    this.plan = {
-      name: data.plan.name,
-      credits: data.plan.credits,
-      expiresAt: data.plan.expiresAt?.toDate(),
-    };
+    this.plan = data.plan
+      ? {
+          name: data.plan?.name,
+          credits: data.plan?.credits,
+          expiresAt: data.plan?.expiresAt?.toDate(),
+        }
+      : this.freePlan();
 
     this.validate();
+  }
+
+  freePlan() {
+    return {
+      name: "gratuito",
+      credits: 1,
+      expiresAt: null,
+    };
   }
 
   validate() {

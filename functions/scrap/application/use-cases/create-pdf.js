@@ -22,7 +22,7 @@ class CreatePdfUseCase {
       throw new NoCreditsAvailableException("No credits available");
     }
 
-    if (data.property.gallery.length > 5) {
+    if (data.property.gallery.length > process.env.MAX_IMAGES) {
       throw new Error("Gallery size is greater than 5");
     }
 
