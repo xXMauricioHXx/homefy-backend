@@ -34,15 +34,26 @@ jobs:
         working-directory: ./functions
         run: npm run lint
 
-      - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
+      # 🔐 grava a service account em arquivo e exporta GOOGLE_APPLICATION_CREDENTIALS
+      - name: Configure GCP credentials
+        shell: bash
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}' > $RUNNER_TEMP/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gcp-key.json" >> $GITHUB_ENV
+
+      # 🔥 instala firebase-tools fixando versão (evita quebra)
+      - name: Install firebase-tools
+        run: npm i -g firebase-tools@13
+
+      - name: Deploy to Firebase (functions)
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
           DEWATERMARK_API_URL: ${{ secrets.DEWATERMARK_API_URL }}
           HOMEFY_FIREBASE_PROJECT_ID: ${{ secrets.HOMEFY_FIREBASE_PROJECT_ID }}
           HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
           FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
           ENABLE_DEWATERMARK: ${{ secrets.ENABLE_DEWATERMARK }}
+        run: |
+          firebase deploy --only functions \
+            --project "$HOMEFY_FIREBASE_PROJECT_ID" \
+            --debug
