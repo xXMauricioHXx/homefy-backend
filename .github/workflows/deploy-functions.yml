@@ -34,10 +34,6 @@ jobs:
         working-directory: ./functions
         run: npm run lint
 
-      - name: Show service account email (debug)
-        run: |
-          node -e "const fs=require('fs'); const p=process.env.GOOGLE_APPLICATION_CREDENTIALS; const j=JSON.parse(fs.readFileSync(p,'utf8')); console.log('SA client_email:', j.client_email)"
-
       # 🔐 grava a service account em arquivo e exporta GOOGLE_APPLICATION_CREDENTIALS
       - name: Configure GCP credentials
         shell: bash
