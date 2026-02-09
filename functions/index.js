@@ -6,4 +6,5 @@ initializeApp({
 
 const scrapFunctions = require("./scrap");
 
+console.log("Starting functions");
 exports.scrap = scrapFunctions;

@@ -1,5 +1,3 @@
-const { User } = require("../../domain/entities/user.entity");
-
 class UpdateUserUseCase {
   constructor(firestoreAdapter) {
     this.firestoreAdapter = firestoreAdapter;
@@ -8,33 +6,26 @@ class UpdateUserUseCase {
   async execute(userId, userData) {
     console.log("[START] - Updating User entity");
 
-    // Verify if user exists
     const existingUser = await this.firestoreAdapter.findById("users", userId);
 
     if (!existingUser) {
       throw new Error("User not found");
     }
 
-    // Create updated user entity with validation
-    const updatedUserEntity = new User({
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      createdAt: existingUser.createdAt,
-      id: userId,
-    });
+    console.log(existingUser);
 
     console.log("[INFO] - Updating User in Firestore");
-    await this.firestoreAdapter.update(
-      "users",
-      userId,
-      updatedUserEntity.toFirestore(),
-    );
+    await this.firestoreAdapter.setWithMerge("users", userId, {
+      ...userData,
+      updatedAt: new Date(),
+    });
 
     console.log("[INFO] - User updated successfully with ID:", userId);
     return {
       id: userId,
-      ...updatedUserEntity.toFirestore(),
+      ...existingUser,
+      ...userData,
+      updatedAt: new Date(),
     };
   }
 }

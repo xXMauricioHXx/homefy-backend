@@ -14,7 +14,6 @@ class CreatePdfUseCase {
   async execute(data, userId) {
     const pdfId = randomUUID();
 
-    // Verify if user exists
     console.log("[INFO] - Verifying user existence");
     const user = await this.getUserByIdUseCase.execute(userId);
 
