@@ -1,0 +1,48 @@
+name: Deploy Firebase Functions
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install functions dependencies
+        working-directory: ./functions
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./functions
+        run: npm run lint
+
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
+          DEWATERMARK_API_URL: ${{ secrets.DEWATERMARK_API_URL }}
+          HOMEFY_FIREBASE_PROJECT_ID: ${{ secrets.HOMEFY_FIREBASE_PROJECT_ID }}
+          HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
+          FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
+          ENABLE_DEWATERMARK: ${{ secrets.ENABLE_DEWATERMARK }}
