@@ -129,7 +129,7 @@ class CreditoRealMapper {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}/m²`;
-    } catch (error) {
+    } catch {
       return "N/D";
     }
   }
