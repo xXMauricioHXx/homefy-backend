@@ -3,11 +3,18 @@ const { getFirestore } = require("firebase-admin/firestore");
 class FirestoreAdapter {
   constructor() {
     this.db = getFirestore();
+    this.environment = process.env.NODE_ENV == "development" ? "-dev" : "";
+  }
+
+  replaceCollectionName(collectionName) {
+    return collectionName + this.environment;
   }
 
   async save(collectionName, data) {
     try {
-      const docRef = await this.db.collection(collectionName).add(data);
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const docRef = await this.db.collection(replacedCollectionName).add(data);
       console.log(
         `[INFO] - Document saved to ${collectionName} with ID: ${docRef.id}`,
       );
@@ -23,7 +30,9 @@ class FirestoreAdapter {
 
   async saveWithId(collectionName, id, data) {
     try {
-      const docRef = this.db.collection(collectionName).doc(id);
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const docRef = this.db.collection(replacedCollectionName).doc(id);
       await docRef.set(data);
       console.log(
         `[INFO] - Document saved to ${collectionName} with ID: ${id}`,
@@ -40,7 +49,9 @@ class FirestoreAdapter {
 
   async findById(collectionName, id) {
     try {
-      const docRef = this.db.collection(collectionName).doc(id);
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const docRef = this.db.collection(replacedCollectionName).doc(id);
       const doc = await docRef.get();
 
       if (!doc.exists) {
@@ -62,7 +73,9 @@ class FirestoreAdapter {
 
   async update(collectionName, id, data) {
     try {
-      const docRef = this.db.collection(collectionName).doc(id);
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const docRef = this.db.collection(replacedCollectionName).doc(id);
       await docRef.update({
         ...data,
         updatedAt: new Date(),
@@ -82,7 +95,9 @@ class FirestoreAdapter {
 
   async setWithMerge(collectionName, id, data) {
     try {
-      const docRef = this.db.collection(collectionName).doc(id);
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const docRef = this.db.collection(replacedCollectionName).doc(id);
       await docRef.set(
         {
           ...data,
@@ -105,8 +120,10 @@ class FirestoreAdapter {
 
   async findByUserId(collectionName, userId) {
     try {
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
       const snapshot = await this.db
-        .collection(collectionName)
+        .collection(replacedCollectionName)
         .where("userId", "==", userId)
         .get();
 

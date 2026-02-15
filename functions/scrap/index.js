@@ -31,6 +31,12 @@ const {
 const {
   NoCreditsAvailableException,
 } = require("./domain/exceptions/no-credits-available.exception");
+const {
+  PdfRepository,
+} = require("./infrastructure/repositories/pdf.repository");
+const {
+  GetGalleryByPdfIdUseCase,
+} = require("./application/use-cases/get-gallery-by-pdf-id");
 
 const storageAdapter = new StorageAdapter();
 const httpAdapter = new HttpAdapter();
@@ -43,21 +49,23 @@ const getPageContentUseCase = new GetPageContentUseCase(
   httpAdapter,
   mapperFactory,
 );
+const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
 
 const uploadImagesUseCase = new UploadImagesUseCase(
   dewatermarkHttp,
   storageAdapter,
   httpAdapter,
+  getUserByIdUseCase,
+  firestoreAdapter,
 );
 
-const getPdfByIdUseCase = new GetPdfByIdUseCase(firestoreAdapter);
-const getPdfsByUserIdUseCase = new GetPdfsByUserIdUseCase(firestoreAdapter);
-const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
+const pdfRepository = new PdfRepository();
+const getPdfByIdUseCase = new GetPdfByIdUseCase(pdfRepository);
+const getPdfsByUserIdUseCase = new GetPdfsByUserIdUseCase(pdfRepository);
 
 const createPdfUseCase = new CreatePdfUseCase(
   uploadImagesUseCase,
   firestoreAdapter,
-  getUserByIdUseCase,
 );
 
 const createUserUseCase = new CreateUserUseCase(firestoreAdapter);
@@ -67,6 +75,8 @@ const updateUserUseCase = new UpdateUserUseCase(firestoreAdapter);
 const updatePdfUseCase = new UpdatePdfUseCase(firestoreAdapter);
 
 const updateUserPhotoUseCase = new UpdateUserPhotoUseCase(firestoreAdapter);
+
+const getGalleryByPdfIdUseCase = new GetGalleryByPdfIdUseCase(pdfRepository);
 
 const getPageContent = onRequest(
   { region: "us-central1", cors: true },
@@ -127,17 +137,13 @@ const uploadImages = onRequest(
         });
       });
 
-      const { urls, pdfId } = req.body;
+      const { urls } = req.body;
 
       if (!urls.length) {
         return res.status(400).json({ error: "URLs é obrigatória" });
       }
 
-      if (!pdfId) {
-        return res.status(400).json({ error: "PDF ID é obrigatório" });
-      }
-
-      const data = await uploadImagesUseCase.execute(urls, pdfId);
+      const data = await uploadImagesUseCase.execute(urls, req.user.uid);
 
       return res.status(200).json(data);
     } catch (error) {
@@ -476,6 +482,42 @@ const updateUserPhoto = onRequest(
   },
 );
 
+const getGalleryByPdfId = onRequest(
+  { region: "us-central1", cors: true },
+  async (req, res) => {
+    try {
+      if (req.method !== "GET") {
+        return res.status(405).send("Method Not Allowed");
+      }
+
+      await new Promise((resolve, reject) => {
+        authMiddleware.verifyToken(req, res, (error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      });
+
+      if (!req.query.pdfId) {
+        return res.status(400).json({ error: "PDF ID é obrigatório" });
+      }
+
+      const galleryData = await getGalleryByPdfIdUseCase.execute(
+        req.query.pdfId,
+      );
+
+      return res.status(200).json(galleryData);
+    } catch (error) {
+      console.error("Error to get gallery by user ID:", error);
+
+      if (error.message && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      return res.status(500).json({ error: "Erro ao buscar galeria" });
+    }
+  },
+);
+
 module.exports = {
   getPageContent,
   uploadImages,
@@ -487,4 +529,5 @@ module.exports = {
   getUserById,
   updatePdf,
   updateUserPhoto,
+  getGalleryByPdfId,
 };

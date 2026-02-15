@@ -1,25 +1,22 @@
+const { Pdf } = require("../../domain/entities/pdf.entity");
+
 class GetPdfsByUserIdUseCase {
-  constructor(firestoreAdapter) {
-    this.firestoreAdapter = firestoreAdapter;
+  constructor(pdfRepository) {
+    this.pdfRepository = pdfRepository;
   }
 
   async execute(userId) {
     try {
       console.log(`[START] - Fetching PDFs for user ID: ${userId}`);
 
-      const pdfs = await this.firestoreAdapter.findByUserId("pdfs", userId);
+      const pdfs = await this.pdfRepository.findByUserId(userId);
 
       console.log(
         `[END] - Retrieved ${pdfs.length} PDFs for user ID: ${userId}`,
       );
 
       return pdfs.map((pdf) => {
-        return {
-          id: pdf.id,
-          ...pdf,
-          createdAt: pdf.createdAt.toDate(),
-          updatedAt: pdf.updatedAt.toDate(),
-        };
+        return new Pdf(pdf).toDomain();
       });
     } catch (error) {
       console.error(

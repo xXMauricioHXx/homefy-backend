@@ -1,7 +1,12 @@
 const cheerio = require("cheerio");
+const { HttpAdapter } = require("../../adapters/http.adapter");
 
 class FoxterMapper {
-  map(html) {
+  constructor() {
+    this.http = new HttpAdapter();
+  }
+
+  async map(html) {
     try {
       // Carrega o HTML no Cheerio para extração de dados
       const $ = cheerio.load(html);
@@ -33,7 +38,7 @@ class FoxterMapper {
         FoxterMapper.buildImageUrl(baseUrl, img.etag),
       );
 
-      const mainImage = gallery[0] || "N/A";
+      const mainImage = gallery[0] || "N/D";
       const sideImages = gallery.slice(1, 3);
 
       // Extrai dormitórios, banheiros, vagas e preço/m² do HTML usando Cheerio
@@ -47,24 +52,24 @@ class FoxterMapper {
       const scrapedData = {
         brand: {
           name: product.developmentName || "Corretora",
-          location: city || "N/A",
-          description: product.h1 || product.title || "N/A",
+          location: city || "N/D",
+          description: product.h1 || product.title || "N/D",
         },
         property: {
-          resume: product.h1 || product.title || "N/A",
-          description: product.description || "N/A",
-          reference: product.code?.toString() || "N/A",
+          resume: product.h1 || product.title || "N/D",
+          description: product.description || "N/D",
+          reference: product.code?.toString() || "N/D",
           mainImage,
           sideImages,
           gallery,
           features: product.features?.slice(0, 10) || [],
           infrastructures: product.developmentFeatures?.slice(0, 10) || [],
-          area: product.areaPrivate || product.areaTotal || "N/A",
+          area: product.areaPrivate || product.areaTotal || "N/D",
           bedrooms,
           bathrooms,
-          condominium: product.condominiumAmountValue || "N/A",
+          condominium: product.condominiumAmountValue || "N/D",
           parking,
-          iptu: product.iptu || "N/A",
+          iptu: product.iptu || "N/D",
           price: FoxterMapper.formatPrice(product.saleValue),
           pricePerSqm,
         },
@@ -76,39 +81,39 @@ class FoxterMapper {
 
       return {
         brand: {
-          name: "N/A",
-          location: "N/A",
-          description: "N/A",
+          name: "N/D",
+          location: "N/D",
+          description: "N/D",
         },
         property: {
-          resume: "N/A",
-          description: "N/A",
-          reference: "N/A",
-          mainImage: "N/A",
+          resume: "N/D",
+          description: "N/D",
+          reference: "N/D",
+          mainImage: "N/D",
           sideImages: [],
           gallery: [],
           features: [],
           infrastructures: [],
-          area: "N/A",
-          bedrooms: "N/A",
-          bathrooms: "N/A",
-          condominium: "N/A",
-          parking: "N/A",
-          iptu: "N/A",
-          price: "N/A",
-          pricePerSqm: "N/A",
+          area: "N/D",
+          bedrooms: "N/D",
+          bathrooms: "N/D",
+          condominium: "N/D",
+          parking: "N/D",
+          iptu: "N/D",
+          price: "N/D",
+          pricePerSqm: "N/D",
         },
       };
     }
   }
 
   static buildImageUrl(baseUrl, etag, size = "1024/1") {
-    if (!etag) return "N/A";
+    if (!etag) return "N/D";
     return `${baseUrl}${size}/foxter/wm/${etag}`;
   }
 
   static formatPrice(value) {
-    if (!value) return "N/A";
+    if (!value) return "N/D";
     const numericValue = value.replace(/\./g, "").replace(/,/g, ".");
     const number = parseFloat(numericValue);
     if (isNaN(number)) return value;
@@ -119,7 +124,7 @@ class FoxterMapper {
   }
 
   static getCity(product) {
-    const name = product.h1 || product.title || "N/A";
+    const name = product.h1 || product.title || "N/D";
 
     return name.split("-")[1].trim();
   }
@@ -127,7 +132,7 @@ class FoxterMapper {
   static extractBedrooms($) {
     // Procura no #product-characteristics por texto que contenha "dorm"
     const characteristics = $("#product-characteristics");
-    let bedrooms = "N/A";
+    let bedrooms = "N/D";
 
     characteristics.find(".flex").each((i, elem) => {
       const text = $(elem).text().trim();
@@ -144,7 +149,7 @@ class FoxterMapper {
   static extractBathrooms($) {
     // Procura no #product-characteristics por texto que contenha "banheiro"
     const characteristics = $("#product-characteristics");
-    let bathrooms = "N/A";
+    let bathrooms = "N/D";
 
     characteristics.find(".flex").each((i, elem) => {
       const text = $(elem).text().trim();
@@ -161,7 +166,7 @@ class FoxterMapper {
   static extractParking($) {
     // Procura no #product-characteristics por texto que contenha "vaga"
     const characteristics = $("#product-characteristics");
-    let parking = "N/A";
+    let parking = "N/D";
 
     characteristics.find(".flex").each((i, elem) => {
       const text = $(elem).text().trim();
@@ -178,7 +183,7 @@ class FoxterMapper {
   static extractPricePerSqm($) {
     // Procura no #product-characteristics por texto que contenha "R$ ... /m²"
     const characteristics = $("#product-characteristics");
-    let pricePerSqm = "N/A";
+    let pricePerSqm = "N/D";
 
     characteristics.find(".flex").each((i, elem) => {
       const text = $(elem).text().trim();
@@ -190,6 +195,10 @@ class FoxterMapper {
     });
 
     return pricePerSqm;
+  }
+
+  async getContent(url) {
+    return await this.http.get(url, "text");
   }
 }
 

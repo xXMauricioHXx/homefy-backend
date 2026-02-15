@@ -1,7 +1,12 @@
 const cheerio = require("cheerio");
+const { HttpAdapter } = require("../../adapters/http.adapter");
 
 class RealizaMapper {
-  map(html) {
+  constructor() {
+    this.http = new HttpAdapter();
+  }
+
+  async map(html) {
     try {
       // Carrega o HTML no Cheerio para extração de dados
       const $ = cheerio.load(html);
@@ -15,17 +20,17 @@ class RealizaMapper {
 
       // Extrai descrição do imóvel
       const description =
-        $('meta[name="description"]').attr("content") || "N/A";
+        $('meta[name="description"]').attr("content") || "N/D";
 
       // Extrai o título/resumo do imóvel
-      const resume = $("h1").first().text().trim() || "N/A";
+      const resume = $("h1").first().text().trim() || "N/D";
 
       // Extrai o código de referência
       const reference = RealizaMapper.extractReference($);
 
       // Extrai imagens
       const gallery = RealizaMapper.extractGallery($);
-      const mainImage = gallery[0] || "N/A";
+      const mainImage = gallery[0] || "N/D";
       const sideImages = gallery.slice(1, 3);
 
       // Extrai características do imóvel
@@ -47,7 +52,7 @@ class RealizaMapper {
       const scrapedData = {
         brand: {
           name: brandName,
-          location: location || "N/A",
+          location: location || "N/D",
           description: resume,
         },
         property: {
@@ -76,27 +81,27 @@ class RealizaMapper {
 
       return {
         brand: {
-          name: "N/A",
-          location: "N/A",
-          description: "N/A",
+          name: "N/D",
+          location: "N/D",
+          description: "N/D",
         },
         property: {
-          resume: "N/A",
-          description: "N/A",
-          reference: "N/A",
-          mainImage: "N/A",
+          resume: "N/D",
+          description: "N/D",
+          reference: "N/D",
+          mainImage: "N/D",
           sideImages: [],
           gallery: [],
           features: [],
           infrastructures: [],
-          area: "N/A",
-          bedrooms: "N/A",
-          bathrooms: "N/A",
-          condominium: "N/A",
-          parking: "N/A",
-          iptu: "N/A",
-          price: "N/A",
-          pricePerSqm: "N/A",
+          area: "N/D",
+          bedrooms: "N/D",
+          bathrooms: "N/D",
+          condominium: "N/D",
+          parking: "N/D",
+          iptu: "N/D",
+          price: "N/D",
+          pricePerSqm: "N/D",
         },
       };
     }
@@ -107,7 +112,7 @@ class RealizaMapper {
    */
   static extractLocation($) {
     const breadcrumbs = $(".brands li");
-    let location = "N/A";
+    let location = "N/D";
 
     breadcrumbs.each((i, elem) => {
       const text = $(elem).text().trim();
@@ -129,7 +134,7 @@ class RealizaMapper {
   static extractReference($) {
     // Procura no breadcrumb ou no título
     const breadcrumbs = $(".brands li");
-    let reference = "N/A";
+    let reference = "N/D";
 
     breadcrumbs.each((i, elem) => {
       const text = $(elem).text().trim();
@@ -141,7 +146,7 @@ class RealizaMapper {
     });
 
     // Se não encontrou no breadcrumb, tenta no atributo data-codigo
-    if (reference === "N/A") {
+    if (reference === "N/D") {
       const dataCode = $("[data-codigo]").first().attr("data-codigo");
       if (dataCode) {
         reference = dataCode;
@@ -206,7 +211,7 @@ class RealizaMapper {
    * Extrai a área do imóvel
    */
   static extractArea($) {
-    let area = "N/A";
+    let area = "N/D";
 
     // Procura nos itens de valor
     $(".va-itens li").each((i, elem) => {
@@ -225,7 +230,7 @@ class RealizaMapper {
    * Extrai o número de quartos
    */
   static extractBedrooms($) {
-    let bedrooms = "N/A";
+    let bedrooms = "N/D";
 
     // Procura nos itens de valor
     $(".va-itens li").each((i, elem) => {
@@ -244,7 +249,7 @@ class RealizaMapper {
    * Extrai o número de banheiros
    */
   static extractBathrooms($) {
-    let bathrooms = "N/A";
+    let bathrooms = "N/D";
 
     // Procura nos itens de valor
     $(".va-itens li").each((i, elem) => {
@@ -263,7 +268,7 @@ class RealizaMapper {
    * Extrai o número de vagas de garagem
    */
   static extractParking($) {
-    let parking = "N/A";
+    let parking = "N/D";
 
     // Procura nos itens de valor
     $(".va-itens li").each((i, elem) => {
@@ -282,7 +287,7 @@ class RealizaMapper {
    * Extrai o preço do imóvel
    */
   static extractPrice($) {
-    let price = "N/A";
+    let price = "N/D";
 
     // Procura nos itens de valor
     $(".va-itens li").each((i, elem) => {
@@ -301,7 +306,7 @@ class RealizaMapper {
    * Extrai o valor do condomínio
    */
   static extractCondominium($) {
-    let condominium = "N/A";
+    let condominium = "N/D";
 
     // Procura por texto que contenha "condomínio"
     $("li, p, span, div").each((i, elem) => {
@@ -320,7 +325,7 @@ class RealizaMapper {
    * Extrai o valor do IPTU
    */
   static extractIPTU($) {
-    let iptu = "N/A";
+    let iptu = "N/D";
 
     // Procura por texto que contenha "IPTU"
     $("li, p, span, div").each((i, elem) => {
@@ -339,8 +344,8 @@ class RealizaMapper {
    * Calcula o preço por metro quadrado
    */
   static calculatePricePerSqm(price, area) {
-    if (price === "N/A" || area === "N/A") {
-      return "N/A";
+    if (price === "N/D" || area === "N/D") {
+      return "N/D";
     }
 
     try {
@@ -351,7 +356,7 @@ class RealizaMapper {
       const areaValue = parseFloat(area);
 
       if (isNaN(priceValue) || isNaN(areaValue) || areaValue === 0) {
-        return "N/A";
+        return "N/D";
       }
 
       const pricePerSqm = priceValue / areaValue;
@@ -361,8 +366,12 @@ class RealizaMapper {
       })}/m²`;
     } catch (error) {
       console.error("Erro ao calcular preço por m²:", error);
-      return "N/A";
+      return "N/D";
     }
+  }
+
+  async getContent(url) {
+    return await this.http.get(url, "text");
   }
 }
 
