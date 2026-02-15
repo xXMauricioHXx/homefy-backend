@@ -79,7 +79,7 @@ const updateUserPhotoUseCase = new UpdateUserPhotoUseCase(firestoreAdapter);
 const getGalleryByPdfIdUseCase = new GetGalleryByPdfIdUseCase(pdfRepository);
 
 const getPageContent = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "POST") {
@@ -106,8 +106,11 @@ const getPageContent = onRequest(
     } catch (error) {
       console.error("Error to try scrap URL:", error);
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
       if (error.message && error.message.includes("Nenhum mapper encontrado")) {
@@ -175,8 +178,11 @@ const getPdfsByUserId = onRequest(
     } catch (error) {
       console.error("Error to get PDFs by user ID:", error);
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
       return res.status(500).json({ error: "Erro ao buscar PDFs do usuário" });
@@ -211,9 +217,11 @@ const createPdf = onRequest(
       }
 
       console.error("Error to create PDF:", error);
-      return res
-        .status(500)
-        .json({ error: "Erro ao criar PDF", code: "Unexpected exception" });
+      const status = error.status || 500;
+      return res.status(status).json({
+        error: error.message || "Erro ao criar PDF",
+        code: error.code || "Unexpected exception",
+      });
     }
   },
 );
@@ -260,7 +268,10 @@ const createUser = onRequest(
         return res.status(400).json({ error: error.message });
       }
 
-      return res.status(500).json({ error: "Erro ao criar usuário" });
+      const status = error.status || 500;
+      return res
+        .status(status)
+        .json({ error: error.message || "Erro ao criar usuário" });
     }
   },
 );
@@ -311,8 +322,11 @@ const updateUser = onRequest(
         return res.status(400).json({ error: error.message });
       }
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
       return res.status(500).json({ error: "Erro ao atualizar usuário" });
@@ -347,11 +361,17 @@ const getUserById = onRequest(
         return res.status(404).json({ error: "Usuário não encontrado" });
       }
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
-      return res.status(500).json({ error: "Erro ao buscar usuário" });
+      const status = error.status || 500;
+      return res
+        .status(status)
+        .json({ error: error.message || "Erro ao buscar usuário" });
     }
   },
 );
@@ -391,8 +411,11 @@ const updatePdf = onRequest(
         return res.status(404).json({ error: "PDF não encontrado" });
       }
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
       return res
@@ -440,8 +463,11 @@ const updateUserPhoto = onRequest(
         return res.status(400).json({ error: error.message });
       }
 
-      if (error.message && error.message.includes("Unauthorized")) {
-        return res.status(401).json({ error: error.message });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
       }
 
       return res
@@ -478,8 +504,15 @@ const getGalleryByPdfId = onRequest(
     } catch (error) {
       console.error("Error to get gallery by user ID:", error);
 
-      if (error.message && error.message.includes("not found")) {
-        return res.status(404).json({ error: "Usuário não encontrado" });
+      if (
+        error.status === 401 ||
+        (error.message && error.message.includes("Unauthorized"))
+      ) {
+        return res.status(error.status || 401).json({ error: error.message });
+      }
+
+      if (error.message && error.message.includes("found")) {
+        return res.status(404).json({ error: "Galeria não encontrada" });
       }
 
       return res.status(500).json({ error: "Erro ao buscar galeria" });

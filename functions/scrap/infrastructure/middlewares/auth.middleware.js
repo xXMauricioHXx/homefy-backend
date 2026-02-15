@@ -6,17 +6,17 @@ class AuthMiddleware {
       const authHeader = req.headers.authorization;
 
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({
-          error: "Unauthorized - No token provided",
-        });
+        const error = new Error("Unauthorized - No token provided");
+        error.status = 401;
+        return next(error);
       }
 
       const token = authHeader.split("Bearer ")[1];
 
       if (!token) {
-        return res.status(401).json({
-          error: "Unauthorized - Invalid token format",
-        });
+        const error = new Error("Unauthorized - Invalid token format");
+        error.status = 401;
+        return next(error);
       }
 
       const decodedToken = await getAuth().verifyIdToken(token);
@@ -29,9 +29,9 @@ class AuthMiddleware {
       next();
     } catch (error) {
       console.error("[ERROR] - Token verification failed:", error);
-      return res.status(401).json({
-        error: "Unauthorized - Invalid token",
-      });
+      const authError = new Error("Unauthorized - Invalid token");
+      authError.status = 401;
+      return next(authError);
     }
   }
 }
