@@ -123,7 +123,7 @@ const getPageContent = onRequest(
 );
 
 const getPdfById = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "GET") {
@@ -152,7 +152,7 @@ const getPdfById = onRequest(
 );
 
 const getPdfsByUserId = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "GET") {
@@ -185,7 +185,7 @@ const getPdfsByUserId = onRequest(
 );
 
 const createPdf = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     if (req.method !== "POST") {
       return res.status(405).send("Method Not Allowed");
@@ -219,7 +219,7 @@ const createPdf = onRequest(
 );
 
 const createUser = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "POST") {
@@ -266,7 +266,7 @@ const createUser = onRequest(
 );
 
 const updateUser = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "PUT") {
@@ -321,7 +321,7 @@ const updateUser = onRequest(
 );
 
 const getUserById = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "GET") {
@@ -357,7 +357,7 @@ const getUserById = onRequest(
 );
 
 const updatePdf = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "PUT") {
@@ -403,7 +403,7 @@ const updatePdf = onRequest(
 );
 
 const updateUserPhoto = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "PUT") {
@@ -452,7 +452,7 @@ const updateUserPhoto = onRequest(
 );
 
 const getGalleryByPdfId = onRequest(
-  { region: "us-central1", cors: true },
+  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
     try {
       if (req.method !== "GET") {

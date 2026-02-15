@@ -1,7 +1,7 @@
 const { initializeApp } = require("firebase-admin/app");
 
 initializeApp({
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  storageBucket: process.env.HOMEFY_FIREBASE_STORAGE_BUCKET,
 });
 
 const scrapFunctions = require("./scrap");
