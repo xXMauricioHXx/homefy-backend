@@ -53,6 +53,7 @@ jobs:
           HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
           FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
           ENABLE_DEWATERMARK: ${{ secrets.ENABLE_DEWATERMARK }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
           firebase deploy --only functions \
             --project "$HOMEFY_FIREBASE_PROJECT_ID" \
