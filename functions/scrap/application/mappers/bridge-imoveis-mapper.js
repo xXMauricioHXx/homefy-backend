@@ -57,7 +57,7 @@ class BridgeImoveisMapper {
         if (titleMatch) {
           const title = titleMatch[1];
           // Extract location pattern like "Bela Vista, POA/RS"
-          const locMatch = title.match(/([^,]+),\s*([^\/\-]+)\/([A-Z]{2})/i);
+          const locMatch = title.match(/([^,]+),\s*([^/-]+)\/([A-Z]{2})/i);
           if (locMatch) {
             locationStr = `${locMatch[1]}, ${locMatch[2]}, ${locMatch[3]}`;
           }
@@ -295,7 +295,7 @@ class BridgeImoveisMapper {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}/m²`;
-    } catch (error) {
+    } catch {
       return "N/D";
     }
   }

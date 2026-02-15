@@ -1,5 +1,4 @@
 const cheerio = require("cheerio");
-const { phaseToCapitalize } = require("../../shared/phase-to-capitalize");
 const { scrapPage } = require("../../adapters/scrapper");
 
 class ColnaghiMapper {
@@ -115,7 +114,7 @@ class ColnaghiMapper {
 
       const pricePerSqm = numericPrice / numericArea;
       return `R$ ${pricePerSqm.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/m²`;
-    } catch (e) {
+    } catch {
       return "N/D";
     }
   }

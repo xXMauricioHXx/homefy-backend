@@ -354,7 +354,7 @@ class MultimobMapper {
         return "N/D";
       const pricePerSqm = numericPrice / numericArea;
       return `R$ ${pricePerSqm.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/m²`;
-    } catch (e) {
+    } catch {
       return "N/D";
     }
   }
