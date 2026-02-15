@@ -122,37 +122,6 @@ const getPageContent = onRequest(
   },
 );
 
-const uploadImages = onRequest(
-  { region: "us-central1", cors: true },
-  async (req, res) => {
-    try {
-      if (req.method !== "POST") {
-        return res.status(405).send("Method Not Allowed");
-      }
-
-      await new Promise((resolve, reject) => {
-        authMiddleware.verifyToken(req, res, (error) => {
-          if (error) reject(error);
-          else resolve();
-        });
-      });
-
-      const { urls } = req.body;
-
-      if (!urls.length) {
-        return res.status(400).json({ error: "URLs é obrigatória" });
-      }
-
-      const data = await uploadImagesUseCase.execute(urls, req.user.uid);
-
-      return res.status(200).json(data);
-    } catch (error) {
-      console.error("Error to try upload images:", error);
-      return res.status(500).json({ error: "Error to try upload images" });
-    }
-  },
-);
-
 const getPdfById = onRequest(
   { region: "us-central1", cors: true },
   async (req, res) => {
@@ -520,7 +489,6 @@ const getGalleryByPdfId = onRequest(
 
 module.exports = {
   getPageContent,
-  uploadImages,
   getPdfById,
   getPdfsByUserId,
   createPdf,
