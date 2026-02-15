@@ -1,46 +1,38 @@
 const { randomUUID } = require("crypto");
 const { Pdf } = require("../../domain/entities/pdf.entity");
-const {
-  NoCreditsAvailableException,
-} = require("../../domain/exceptions/no-credits-available.exception");
+const SHA256 = require("crypto-js/sha256");
 
 class CreatePdfUseCase {
-  constructor(uploadImagesUseCase, firestoreAdapter, getUserByIdUseCase) {
+  constructor(uploadImagesUseCase, firestoreAdapter) {
     this.uploadImagesUseCase = uploadImagesUseCase;
     this.firestoreAdapter = firestoreAdapter;
-    this.getUserByIdUseCase = getUserByIdUseCase;
   }
 
   async execute(data, userId) {
+    console.log("[START] - Create PDF");
     const pdfId = randomUUID();
+    const enterpriseId = SHA256(data.url.trim()).toString();
 
-    console.log("[INFO] - Verifying user existence");
-    const user = await this.getUserByIdUseCase.execute(userId);
-
-    if (user.plan.credits <= 0) {
-      throw new NoCreditsAvailableException("No credits available");
-    }
-
-    if (data.property.gallery.length > process.env.MAX_IMAGES) {
-      throw new Error("Gallery size is greater than 5");
-    }
-
+    console.log("[INFO] - Uploading images");
     const imageUrls = await this.uploadImagesUseCase.execute(
       data.property.gallery,
-      pdfId,
+      userId,
+      data.url.trim(),
     );
 
-    console.log("[START] - Creating PDF entity");
+    console.log("[INFO] - Creating PDF entity");
     const pdfEntity = new Pdf({
       brand: data.brand,
       property: {
         ...data.property,
         gallery: imageUrls,
-        mainImage: imageUrls[0] || "N/A",
+        mainImage: imageUrls[0] || "N/D",
         sideImages: imageUrls.slice(0, 2),
       },
       userId: userId,
       pdfId: pdfId,
+      type: data.type,
+      enterpriseId,
     });
 
     console.log("[INFO] - Saving PDF to Firestore");
@@ -49,9 +41,6 @@ class CreatePdfUseCase {
       pdfId,
       pdfEntity.toFirestore(),
     );
-
-    user.useCredit();
-    await this.firestoreAdapter.update("users", userId, user.toFirestore());
 
     console.log("[INFO] - PDF saved successfully");
     return pdfEntity;

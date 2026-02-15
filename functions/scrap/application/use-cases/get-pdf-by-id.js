@@ -1,13 +1,13 @@
 class GetPdfByIdUseCase {
-  constructor(firestoreAdapter) {
-    this.firestoreAdapter = firestoreAdapter;
+  constructor(pdfRepository) {
+    this.pdfRepository = pdfRepository;
   }
 
   async execute(pdfId) {
     try {
       console.log(`[START] - Fetching PDF with ID: ${pdfId}`);
 
-      const pdfData = await this.firestoreAdapter.findById("pdfs", pdfId);
+      const pdfData = await this.pdfRepository.findById(pdfId);
 
       if (!pdfData) {
         console.log(`[INFO] - PDF not found with ID: ${pdfId}`);

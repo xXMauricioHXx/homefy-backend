@@ -13,10 +13,10 @@ class GetPageContentUseCase {
       // Seleciona o mapper apropriado baseado na URL
       const mapper = this.mapperFactory.getMapper(url);
 
-      const html = await this.http.get(url, "text");
+      const html = await mapper.getContent(url);
 
       console.log("[INFO] - Scraping page content");
-      const data = mapper.map(html);
+      const data = await mapper.map(html);
 
       return {
         data,

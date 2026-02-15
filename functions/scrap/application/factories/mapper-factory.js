@@ -1,4 +1,11 @@
+const {
+  AuxiliadoraPredialMapper,
+} = require("../mappers/auxiliadora-predial-mapper");
+const { BridgeImoveisMapper } = require("../mappers/bridge-imoveis-mapper");
+const { ColnaghiMapper } = require("../mappers/colnaghi-mapper");
+const { CreditoRealMapper } = require("../mappers/credito-real-mapper");
 const { FoxterMapper } = require("../mappers/foxter-mapper");
+const { MultimobMapper } = require("../mappers/multimob-mapper");
 const { RealizaMapper } = require("../mappers/realiza-mapper");
 
 class MapperFactory {
@@ -13,6 +20,31 @@ class MapperFactory {
         pattern: /imoveisrealiza\.com/i,
         mapper: new RealizaMapper(),
         name: "Realiza",
+      },
+      {
+        pattern: /auxiliadorapredial\.com\.br/i,
+        mapper: new AuxiliadoraPredialMapper(),
+        name: "Auxiliadora Predial",
+      },
+      {
+        pattern: /creditoreal\.com\.br/i,
+        mapper: new CreditoRealMapper(),
+        name: "Credito Real",
+      },
+      {
+        pattern: /bridgeimoveis\.com\.br/i,
+        mapper: new BridgeImoveisMapper(),
+        name: "Bridge Imóveis",
+      },
+      {
+        pattern: /multiimob\.com\.br/i,
+        mapper: new MultimobMapper(),
+        name: "Multi imob",
+      },
+      {
+        pattern: /colnaghi\.com\.br/i,
+        mapper: new ColnaghiMapper(),
+        name: "Colnaghi",
       },
     ];
   }

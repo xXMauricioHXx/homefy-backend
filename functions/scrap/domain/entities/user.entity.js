@@ -62,7 +62,11 @@ class User {
       photoUrl: this.photoUrl,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      plan: this.plan,
+      plan: {
+        name: this.plan.name,
+        credits: this.plan.credits,
+        expiresAt: this.plan.expiresAt || null,
+      },
     };
   }
 
