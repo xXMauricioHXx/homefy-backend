@@ -32,7 +32,22 @@ class StripeAdapter {
   ];
 
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    this._stripe = null;
+  }
+
+  get stripe() {
+    if (!this._stripe) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        console.error(
+          "[ERROR] - STRIPE_SECRET_KEY is not defined in environment variables",
+        );
+        throw new Error(
+          "Stripe secret key is required. Please check your environment configuration.",
+        );
+      }
+      this._stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+    return this._stripe;
   }
 
   getPlanById(planId) {

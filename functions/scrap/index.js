@@ -1,4 +1,3 @@
-require("dotenv").config();
 const { onRequest } = require("firebase-functions/v2/https");
 const { HttpAdapter } = require("./adapters/http.adapter");
 const { MapperFactory } = require("./application/factories/mapper-factory");
