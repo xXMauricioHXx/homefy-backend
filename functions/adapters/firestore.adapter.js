@@ -195,39 +195,6 @@ class FirestoreAdapter {
       throw error;
     }
   }
-
-  async findByStripeCustomerId(collectionName, stripeCustomerId) {
-    try {
-      const replacedCollectionName = this.replaceCollectionName(collectionName);
-
-      const snapshot = await this.db
-        .collection(replacedCollectionName)
-        .where("stripeCustomerId", "==", stripeCustomerId)
-        .get();
-
-      if (snapshot.empty) {
-        console.log(
-          `[INFO] - No documents found in ${collectionName} for stripeCustomerId: ${stripeCustomerId}`,
-        );
-        return null;
-      }
-
-      const document = snapshot.docs[0];
-      const data = document.data();
-
-      console.log(
-        `[INFO] - Found document in ${collectionName} for stripeCustomerId: ${stripeCustomerId}`,
-      );
-
-      return data;
-    } catch (error) {
-      console.error(
-        `[ERROR] - Failed to find documents in ${collectionName} for stripeCustomerId ${stripeCustomerId}:`,
-        error,
-      );
-      throw error;
-    }
-  }
 }
 
 module.exports = {

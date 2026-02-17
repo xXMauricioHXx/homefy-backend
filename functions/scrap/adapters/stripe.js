@@ -1,0 +1,84 @@
+const Stripe = require("stripe");
+
+class StripeAdapter {
+  plans = [
+    {
+      name: "Plano Gratuito",
+      price: 0,
+      planId: "gratuito",
+      credits: 1,
+    },
+    {
+      name: "Plano Básico",
+      price: 2990,
+      planId: "basico",
+      credits: 10,
+      priceId: "price_1T1Z6DFd80RveoQZhumAiy2S",
+    },
+    {
+      name: "Plano Premium",
+      price: 5990,
+      planId: "premium",
+      credits: 20,
+      priceId: "price_1T1Z7QFd80RveoQZsuYJT25e",
+    },
+    {
+      name: "Plano Premium +",
+      price: 11990,
+      planId: "premium_plus",
+      priceId: "price_1T1Z8FFd80RveoQZ4mlqqFjR",
+      credits: 40,
+    },
+  ];
+
+  constructor() {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+
+  getPlanById(planId) {
+    const plan = this.plans.find((plan) => plan.planId === planId);
+
+    if (!plan) {
+      throw new Error("Plan not found");
+    }
+
+    return plan;
+  }
+
+  async createCheckoutSession(userId, planId) {
+    const plan = this.getPlanById(planId);
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          quantity: 1,
+          price: plan.priceId,
+        },
+      ],
+      metadata: {
+        userId,
+        planId,
+        priceId: plan.priceId,
+      },
+      client_reference_id: userId,
+      mode: "subscription",
+      success_url: `${process.env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
+    });
+
+    return session;
+  }
+
+  async constructEvent(req) {
+    return this.stripe.webhooks.constructEvent(
+      req.rawBody,
+      req.headers["stripe-signature"],
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  }
+}
+
+module.exports = {
+  StripeAdapter,
+};

@@ -54,6 +54,11 @@ jobs:
           FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
           ENABLE_DEWATERMARK: ${{ secrets.ENABLE_DEWATERMARK }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
+          CHECK_EXPIRED_PLANS_SCHEDULE: ${{ secrets.CHECK_EXPIRED_PLANS_SCHEDULE }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
           firebase deploy --only functions \
             --project "$HOMEFY_FIREBASE_PROJECT_ID" \

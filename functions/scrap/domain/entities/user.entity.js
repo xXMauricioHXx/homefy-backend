@@ -16,6 +16,10 @@ class User {
           name: data.plan?.name,
           credits: data.plan?.credits,
           expiresAt: data.plan?.expiresAt?.toDate(),
+          stripeCustomerId: data.plan?.stripeCustomerId || null,
+          stripeSubscriptionId: data.plan?.stripeSubscriptionId || null,
+          stripePriceId: data.plan?.stripePriceId || null,
+          status: data.plan?.status || "active",
         }
       : this.freePlan();
 
@@ -27,7 +31,31 @@ class User {
       name: "gratuito",
       credits: 1,
       expiresAt: null,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePriceId: null,
+      status: "active",
     };
+  }
+
+  setPlan(plan) {
+    this.plan = {
+      name: plan.name,
+      credits: plan.credits,
+      expiresAt: plan.expiresAt,
+      stripeCustomerId: plan.stripeCustomerId || null,
+      stripeSubscriptionId: plan.stripeSubscriptionId || null,
+      stripePriceId: plan.stripePriceId || null,
+      status: plan.status || "active",
+    };
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  getPlan() {
+    return this.plan;
   }
 
   validate() {
@@ -66,6 +94,10 @@ class User {
         name: this.plan.name,
         credits: this.plan.credits,
         expiresAt: this.plan.expiresAt || null,
+        stripeCustomerId: this.plan.stripeCustomerId || null,
+        stripeSubscriptionId: this.plan.stripeSubscriptionId || null,
+        stripePriceId: this.plan.stripePriceId || null,
+        status: this.plan.status || "active",
       },
     };
   }
