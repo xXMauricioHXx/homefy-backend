@@ -1,111 +1,15 @@
+require("dotenv").config();
 const { onRequest } = require("firebase-functions/v2/https");
-const { HttpAdapter } = require("./adapters/http.adapter");
-const { MapperFactory } = require("./application/factories/mapper-factory");
-const {
-  GetPageContentUseCase,
-} = require("./application/use-cases/get-page-content");
-const {
-  UploadImagesUseCase,
-} = require("./application/use-cases/upload-images");
-const { GetPdfByIdUseCase } = require("./application/use-cases/get-pdf-by-id");
-const {
-  GetPdfsByUserIdUseCase,
-} = require("./application/use-cases/get-pdfs-by-user-id");
-const { StorageAdapter } = require("./adapters/storage.adapter");
-const { DewatermarkHttp } = require("./infrastructure/http/dewatermark.http");
-const { FirestoreAdapter } = require("./adapters/firestore.adapter");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const container = require("./container");
 const {
   AuthMiddleware,
 } = require("./infrastructure/middlewares/auth.middleware");
-
-const { CreatePdfUseCase } = require("./application/use-cases/create-pdf");
-const { CreateUserUseCase } = require("./application/use-cases/create-user");
-const { UpdateUserUseCase } = require("./application/use-cases/update-user");
-const {
-  GetUserByIdUseCase,
-} = require("./application/use-cases/get-user-by-id");
-const { UpdatePdfUseCase } = require("./application/use-cases/update-pdf");
-const {
-  UpdateUserPhotoUseCase,
-} = require("./application/use-cases/update-user-photo");
 const {
   NoCreditsAvailableException,
 } = require("./domain/exceptions/no-credits-available.exception");
-const {
-  PdfRepository,
-} = require("./infrastructure/repositories/pdf.repository");
-const {
-  GetGalleryByPdfIdUseCase,
-} = require("./application/use-cases/get-gallery-by-pdf-id");
-const {
-  CheckExpiredPlansUseCase,
-} = require("./application/use-cases/check-expired-plans");
-const { onSchedule } = require("firebase-functions/v2/scheduler");
-const { StripeAdapter } = require("./adapters/stripe");
-const {
-  CreateCheckoutUseCase,
-} = require("./application/use-cases/create-checkout");
-const {
-  CheckoutSessionCompletedUseCase,
-} = require("./application/use-cases/checkout-session-completed");
-const { InvoicePaidUseCase } = require("./application/use-cases/invoice-paid");
-const { CancelPlanUseCase } = require("./application/use-cases/cancel-plan");
 
-const storageAdapter = new StorageAdapter();
-const httpAdapter = new HttpAdapter();
-const dewatermarkHttp = new DewatermarkHttp();
-const firestoreAdapter = new FirestoreAdapter();
 const authMiddleware = new AuthMiddleware();
-const stripeAdapter = new StripeAdapter();
-const invoicePaidUseCase = new InvoicePaidUseCase(
-  stripeAdapter,
-  firestoreAdapter,
-);
-
-const mapperFactory = new MapperFactory();
-const getPageContentUseCase = new GetPageContentUseCase(
-  httpAdapter,
-  mapperFactory,
-);
-const getUserByIdUseCase = new GetUserByIdUseCase(firestoreAdapter);
-
-const uploadImagesUseCase = new UploadImagesUseCase(
-  dewatermarkHttp,
-  storageAdapter,
-  httpAdapter,
-  getUserByIdUseCase,
-  firestoreAdapter,
-);
-
-const pdfRepository = new PdfRepository();
-const getPdfByIdUseCase = new GetPdfByIdUseCase(pdfRepository);
-const getPdfsByUserIdUseCase = new GetPdfsByUserIdUseCase(pdfRepository);
-
-const createPdfUseCase = new CreatePdfUseCase(
-  uploadImagesUseCase,
-  firestoreAdapter,
-);
-
-const createUserUseCase = new CreateUserUseCase(firestoreAdapter);
-
-const updateUserUseCase = new UpdateUserUseCase(firestoreAdapter);
-
-const updatePdfUseCase = new UpdatePdfUseCase(firestoreAdapter);
-
-const updateUserPhotoUseCase = new UpdateUserPhotoUseCase(firestoreAdapter);
-
-const getGalleryByPdfIdUseCase = new GetGalleryByPdfIdUseCase(pdfRepository);
-
-const checkExpiredPlansUseCase = new CheckExpiredPlansUseCase(firestoreAdapter);
-
-const checkoutSessionCompletedUseCase = new CheckoutSessionCompletedUseCase(
-  firestoreAdapter,
-  stripeAdapter,
-);
-
-const cancelPlanUseCase = new CancelPlanUseCase(firestoreAdapter);
-
-const createCheckoutUseCase = new CreateCheckoutUseCase(stripeAdapter);
 
 const checkExpiredPlans = onSchedule(
   {
@@ -117,7 +21,8 @@ const checkExpiredPlans = onSchedule(
     console.log(
       `[TRIGGER] - Start check plan expired - ${new Date().toISOString()}`,
     );
-    const result = await checkExpiredPlansUseCase.execute();
+    const useCase = container.checkExpiredPlansUseCase;
+    const result = await useCase.execute();
     console.log(
       `[TRIGGER] - End check plan expired - ${new Date().toISOString()}`,
     );
@@ -133,7 +38,8 @@ const checkExpiredPlansManual = onRequest(
         return res.status(405).send("Method Not Allowed");
       }
 
-      const result = await checkExpiredPlansUseCase.execute();
+      const useCase = container.checkExpiredPlansUseCase;
+      const result = await useCase.execute();
 
       return res.status(200).json(result);
     } catch (error) {
@@ -166,7 +72,8 @@ const getPageContent = onRequest(
       }
       const userId = req.user.uid;
 
-      const result = await getPageContentUseCase.execute(url, userId);
+      const useCase = container.getPageContentUseCase;
+      const result = await useCase.execute(url, userId);
 
       return res.status(200).json(result);
     } catch (error) {
@@ -205,7 +112,8 @@ const getPdfById = onRequest(
         return res.status(400).json({ error: "PDF ID é obrigatório" });
       }
 
-      const pdfData = await getPdfByIdUseCase.execute(pdfId);
+      const useCase = container.getPdfByIdUseCase;
+      const pdfData = await useCase.execute(pdfId);
 
       return res.status(200).json(pdfData);
     } catch (error) {
@@ -238,7 +146,8 @@ const getPdfsByUserId = onRequest(
       const userId = req.user.uid;
       console.log("Fetching PDFs for user ID:", userId);
 
-      const pdfs = await getPdfsByUserIdUseCase.execute(userId);
+      const useCase = container.getPdfsByUserIdUseCase;
+      const pdfs = await useCase.execute(userId);
 
       return res.status(200).json({ pdfs, total: pdfs.length });
     } catch (error) {
@@ -275,7 +184,8 @@ const createPdf = onRequest(
     const data = req.body;
 
     try {
-      const pdfData = await createPdfUseCase.execute(data, userId);
+      const useCase = container.createPdfUseCase;
+      const pdfData = await useCase.execute(data, userId);
       return res.status(200).json(pdfData);
     } catch (error) {
       if (error instanceof NoCreditsAvailableException) {
@@ -315,7 +225,8 @@ const createUser = onRequest(
         });
       }
 
-      const userData = await createUserUseCase.execute({
+      const useCase = container.createUserUseCase;
+      const userData = await useCase.execute({
         id: req.user.uid,
         name,
         email,
@@ -366,7 +277,8 @@ const updateUser = onRequest(
         });
       }
 
-      const userData = await updateUserUseCase.execute(userId, {
+      const useCase = container.updateUserUseCase;
+      const userData = await useCase.execute(userId, {
         name,
         email,
         phone,
@@ -417,7 +329,8 @@ const getUserById = onRequest(
 
       const userId = req.user.uid;
 
-      const userData = await getUserByIdUseCase.execute(userId);
+      const useCase = container.getUserByIdUseCase;
+      const userData = await useCase.execute(userId);
 
       return res.status(200).json(userData);
     } catch (error) {
@@ -467,7 +380,8 @@ const updatePdf = onRequest(
         return res.status(400).json({ error: "Config é obrigatório" });
       }
 
-      const pdfData = await updatePdfUseCase.execute(pdfId, config);
+      const useCase = container.updatePdfUseCase;
+      const pdfData = await useCase.execute(pdfId, config);
 
       return res.status(200).json(pdfData);
     } catch (error) {
@@ -515,7 +429,8 @@ const updateUserPhoto = onRequest(
         });
       }
 
-      const userData = await updateUserPhotoUseCase.execute(userId, photoUrl);
+      const useCase = container.updateUserPhotoUseCase;
+      const userData = await useCase.execute(userId, photoUrl);
 
       return res.status(200).json(userData);
     } catch (error) {
@@ -562,9 +477,8 @@ const getGalleryByPdfId = onRequest(
         return res.status(400).json({ error: "PDF ID é obrigatório" });
       }
 
-      const galleryData = await getGalleryByPdfIdUseCase.execute(
-        req.query.pdfId,
-      );
+      const useCase = container.getGalleryByPdfIdUseCase;
+      const galleryData = await useCase.execute(req.query.pdfId);
 
       return res.status(200).json(galleryData);
     } catch (error) {
@@ -609,7 +523,8 @@ const createCheckoutSession = onRequest(
 
       const userId = req.user.uid;
 
-      const session = await createCheckoutUseCase.execute(userId, planId);
+      const useCase = container.createCheckoutUseCase;
+      const session = await useCase.execute(userId, planId);
 
       return res.status(201).json(session);
     } catch (error) {
@@ -622,7 +537,7 @@ const createCheckoutSession = onRequest(
   },
 );
 
-const handleCheckoutSessionCompleted = onRequest(async (req, res) => {
+const handleCheckoutSessionCompleted = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -652,7 +567,8 @@ const handleCheckoutSessionCompleted = onRequest(async (req, res) => {
     return res.status(200).send("Webhook processed");
   }
 
-  await checkoutSessionCompletedUseCase.execute(userId, {
+  const useCase = container.checkoutSessionCompletedUseCase;
+  await useCase.execute(userId, {
     stripeSubscriptionId,
     stripeCustomerId,
     planId,
@@ -660,9 +576,9 @@ const handleCheckoutSessionCompleted = onRequest(async (req, res) => {
   });
 
   res.status(200).send("Webhook processed");
-});
+};
 
-const handleInvoicePaid = onRequest(async (req, res) => {
+const handleInvoicePaid = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -685,7 +601,8 @@ const handleInvoicePaid = onRequest(async (req, res) => {
     return res.status(400).send("Missing parameters");
   }
 
-  await invoicePaidUseCase.execute({
+  const useCase = container.invoicePaidUseCase;
+  await useCase.execute({
     stripeCustomerId,
     stripeSubscriptionId,
     billingReason,
@@ -694,9 +611,9 @@ const handleInvoicePaid = onRequest(async (req, res) => {
   });
 
   res.status(200).send("Webhook processed");
-});
+};
 
-const handleSubscriptionSessionCompleted = onRequest(async (req, res) => {
+const handleSubscriptionSessionCompleted = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -725,9 +642,9 @@ const handleSubscriptionSessionCompleted = onRequest(async (req, res) => {
   }
 
   res.status(200).send("Webhook processed");
-});
+};
 
-const handleCancelPlan = onRequest(async (req, res) => {
+const handleCancelPlan = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -737,15 +654,16 @@ const handleCancelPlan = onRequest(async (req, res) => {
 
   const stripeCustomerId = data.customer;
 
-  await cancelPlanUseCase.execute(stripeCustomerId);
+  const useCase = container.cancelPlanUseCase;
+  await useCase.execute(stripeCustomerId);
 
   res.status(200).send("Webhook processed");
-});
+};
 
 const webhookHandlers = onRequest(
   { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
   async (req, res) => {
-    const stripeAdapter = new StripeAdapter();
+    const stripeAdapter = container.stripeAdapter;
 
     console.log("Received webhook:", req.body);
     let event = req.body;

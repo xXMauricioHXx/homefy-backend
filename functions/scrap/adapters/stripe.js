@@ -37,15 +37,11 @@ class StripeAdapter {
 
   get stripe() {
     if (!this._stripe) {
-      if (!process.env.STRIPE_SECRET_KEY) {
-        console.error(
-          "[ERROR] - STRIPE_SECRET_KEY is not defined in environment variables",
-        );
-        throw new Error(
-          "Stripe secret key is required. Please check your environment configuration.",
-        );
+      const key = process.env.STRIPE_SECRET_KEY;
+      if (!key) {
+        throw new Error("STRIPE_SECRET_KEY não configurada no ambiente.");
       }
-      this._stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      this._stripe = new Stripe(key);
     }
     return this._stripe;
   }
