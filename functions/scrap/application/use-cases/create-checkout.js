@@ -4,7 +4,9 @@ class CreateCheckoutUseCase {
   }
 
   async execute(userId, planId) {
-    console.log("[START] - Creating checkout session for user:", userId);
+    console.log(
+      `[START] - Creating checkout session for user: ${userId} and plan: ${planId}`,
+    );
     const session = await this.stripeAdapter.createCheckoutSession(
       userId,
       planId,
