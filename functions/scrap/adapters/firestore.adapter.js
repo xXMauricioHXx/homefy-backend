@@ -202,7 +202,7 @@ class FirestoreAdapter {
 
       const snapshot = await this.db
         .collection(replacedCollectionName)
-        .where("stripeCustomerId", "==", stripeCustomerId)
+        .where("plan.stripeCustomerId", "==", stripeCustomerId)
         .get();
 
       if (snapshot.empty) {

@@ -1,35 +1,37 @@
 const Stripe = require("stripe");
 
 class StripeAdapter {
-  plans = [
-    {
-      name: "Plano Gratuito",
-      price: 0,
-      planId: "gratuito",
-      credits: 1,
-    },
-    {
-      name: "Plano Básico",
-      price: 2990,
-      planId: "basico",
-      credits: 10,
-      priceId: "price_1T1Z6DFd80RveoQZhumAiy2S",
-    },
-    {
-      name: "Plano Premium",
-      price: 5990,
-      planId: "premium",
-      credits: 20,
-      priceId: "price_1T1Z7QFd80RveoQZsuYJT25e",
-    },
-    {
-      name: "Plano Premium +",
-      price: 11990,
-      planId: "premium_plus",
-      priceId: "price_1T1Z8FFd80RveoQZ4mlqqFjR",
-      credits: 40,
-    },
-  ];
+  get plans() {
+    return [
+      {
+        name: "Plano Gratuito",
+        price: 0,
+        planId: "gratuito",
+        credits: 1,
+      },
+      {
+        name: "Plano Básico",
+        price: 2990,
+        planId: "basico",
+        credits: 10,
+        priceId: process.env.STRIPE_PRICE_ID_BASICO,
+      },
+      {
+        name: "Plano Premium",
+        price: 5990,
+        planId: "premium",
+        credits: 20,
+        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
+      },
+      {
+        name: "Plano Premium +",
+        price: 11990,
+        planId: "premium_plus",
+        priceId: process.env.STRIPE_PRICE_ID_PREMIUM_PLUS,
+        credits: 40,
+      },
+    ];
+  }
 
   constructor() {
     this._stripe = null;

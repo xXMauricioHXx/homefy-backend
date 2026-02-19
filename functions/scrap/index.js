@@ -661,7 +661,12 @@ const handleCancelPlan = async (req, res) => {
 };
 
 const webhookHandlers = onRequest(
-  { region: "us-central1", cors: true, memory: "1GiB", timeoutSeconds: 300 },
+  {
+    region: "us-central1",
+    cors: true,
+    memory: "1GiB",
+    timeoutSeconds: 300,
+  },
   async (req, res) => {
     const stripeAdapter = container.stripeAdapter;
 
