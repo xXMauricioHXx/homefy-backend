@@ -271,9 +271,9 @@ const updateUser = onRequest(
       const userId = req.user.uid;
       const { name, email, phone } = req.body;
 
-      if (!name || !email || !phone) {
+      if (!name) {
         return res.status(400).json({
-          error: "Name, email e phone são obrigatórios",
+          error: "Name é obrigatório",
         });
       }
 

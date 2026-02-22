@@ -1,4 +1,4 @@
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, Filter } = require("firebase-admin/firestore");
 
 class FirestoreAdapter {
   constructor() {
@@ -190,6 +190,31 @@ class FirestoreAdapter {
     } catch (error) {
       console.error(
         `[ERROR] - Failed to find expired subscriptions in ${collectionName}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async findByField(collectionName, field, value) {
+    try {
+      const replacedCollectionName = this.replaceCollectionName(collectionName);
+
+      const snapshot = await this.db
+        .collection(replacedCollectionName)
+        .where(field, "==", value)
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) {
+        return null;
+      }
+
+      const doc = snapshot.docs[0];
+      return { id: doc.id, ...doc.data() };
+    } catch (error) {
+      console.error(
+        `[ERROR] - Failed to find document in ${collectionName} by ${field}:`,
         error,
       );
       throw error;

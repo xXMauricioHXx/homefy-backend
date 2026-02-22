@@ -17,6 +17,21 @@ class CreateUserUseCase {
       return userExists;
     }
 
+    console.log("[INFO] - Checking email and phone uniqueness");
+
+    const [emailInUse, phoneInUse] = await Promise.all([
+      this.firestoreAdapter.findByField("users", "email", userData.email),
+      this.firestoreAdapter.findByField("users", "phone", userData.phone),
+    ]);
+
+    if (emailInUse) {
+      throw new Error(`Email '${userData.email}' already in use`);
+    }
+
+    if (phoneInUse) {
+      throw new Error(`Phone '${userData.phone}' already in use`);
+    }
+
     const userEntity = new User({
       name: userData.name,
       email: userData.email,

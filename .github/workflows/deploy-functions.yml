@@ -59,6 +59,9 @@ jobs:
           STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_ID_BASICO: ${{ secrets.STRIPE_PRICE_ID_BASICO }}
+          STRIPE_PRICE_ID_PREMIUM: ${{ secrets.STRIPE_PRICE_ID_PREMIUM }}
+          STRIPE_PRICE_ID_PREMIUM_PLUS: ${{ secrets.STRIPE_PRICE_ID_PREMIUM_PLUS }}
         run: |
           firebase deploy --only functions \
             --project "$HOMEFY_FIREBASE_PROJECT_ID" \
