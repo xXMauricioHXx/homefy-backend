@@ -2,6 +2,8 @@ const {
   NoCreditsAvailableException,
 } = require("../exceptions/no-credits-available.exception");
 
+const { nowFrom1Month } = require("../../shared/date");
+
 class User {
   constructor(data) {
     this.name = data.name;
@@ -30,7 +32,7 @@ class User {
     return {
       name: "gratuito",
       credits: 1,
-      expiresAt: null,
+      expiresAt: nowFrom1Month(),
       stripeCustomerId: null,
       stripeSubscriptionId: null,
       stripePriceId: null,

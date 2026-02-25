@@ -1,4 +1,5 @@
-const { getFirestore, Filter } = require("firebase-admin/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
+const { nowUTC } = require("../shared/date");
 
 class FirestoreAdapter {
   constructor() {
@@ -158,10 +159,13 @@ class FirestoreAdapter {
   }
 
   async findExpiredSubscriptions(collectionName) {
+    const replacedCollectionName = this.replaceCollectionName(collectionName);
     try {
-      const replacedCollectionName = this.replaceCollectionName(collectionName);
-      const now = new Date();
+      const now = nowUTC();
 
+      console.log(
+        `[INFO] - Checking for expired subscriptions in ${replacedCollectionName} before ${now.toISOString()}`,
+      );
       const snapshot = await this.db
         .collection(replacedCollectionName)
         .where("plan.expiresAt", "<", now)
@@ -169,7 +173,7 @@ class FirestoreAdapter {
 
       if (snapshot.empty) {
         console.log(
-          `[INFO] - No expired subscriptions found in ${collectionName}`,
+          `[INFO] - No expired subscriptions found in ${replacedCollectionName}`,
         );
         return [];
       }
@@ -183,13 +187,13 @@ class FirestoreAdapter {
       });
 
       console.log(
-        `[INFO] - Found ${documents.length} expired subscriptions in ${collectionName}`,
+        `[INFO] - Found ${documents.length} expired subscriptions in ${replacedCollectionName}`,
       );
 
       return documents;
     } catch (error) {
       console.error(
-        `[ERROR] - Failed to find expired subscriptions in ${collectionName}:`,
+        `[ERROR] - Failed to find expired subscriptions in ${replacedCollectionName}:`,
         error,
       );
       throw error;
