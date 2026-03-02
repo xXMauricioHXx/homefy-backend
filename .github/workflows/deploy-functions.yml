@@ -34,6 +34,10 @@ jobs:
         working-directory: ./functions
         run: npm run lint
 
+      - name: Build v1 (TypeScript)
+        working-directory: ./functions
+        run: npm run build:v1
+
       # 🔐 grava a service account em arquivo e exporta GOOGLE_APPLICATION_CREDENTIALS
       - name: Configure GCP credentials
         shell: bash
