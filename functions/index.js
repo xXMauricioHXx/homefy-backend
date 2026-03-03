@@ -15,5 +15,6 @@ try {
   exports.v1 = v1Functions;
   console.log("v1 functions loaded successfully");
 } catch (e) {
-  console.warn("[WARN] v1 not built yet");
+  console.error("[ERROR] Failed to load v1 functions:", e.message);
+  console.error("[ERROR] Stack:", e.stack);
 }
