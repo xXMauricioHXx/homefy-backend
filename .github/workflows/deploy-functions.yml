@@ -49,6 +49,27 @@ jobs:
       - name: Install firebase-tools
         run: npm i -g firebase-tools@13
 
+      # 📄 Cria o .env para o dotenv carregar durante a discovery das functions
+      - name: Create functions .env
+        env:
+          DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
+          DEWATERMARK_API_URL: ${{ secrets.DEWATERMARK_API_URL }}
+          HOMEFY_FIREBASE_PROJECT_ID: ${{ secrets.HOMEFY_FIREBASE_PROJECT_ID }}
+          HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
+          FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
+          ENABLE_DEWATERMARK: ${{ secrets.ENABLE_DEWATERMARK }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          CHECK_EXPIRED_PLANS_SCHEDULE: ${{ secrets.CHECK_EXPIRED_PLANS_SCHEDULE }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_ID_BASICO: ${{ secrets.STRIPE_PRICE_ID_BASICO }}
+          STRIPE_PRICE_ID_PREMIUM: ${{ secrets.STRIPE_PRICE_ID_PREMIUM }}
+          STRIPE_PRICE_ID_PREMIUM_PLUS: ${{ secrets.STRIPE_PRICE_ID_PREMIUM_PLUS }}
+        run: |
+          env | grep -E '^(DEWATERMARK_|HOMEFY_|FOXTER_|ENABLE_|NODE_ENV|CHECK_|STRIPE_|FRONTEND_)' > functions/.env
+
       - name: Deploy to Firebase (functions)
         env:
           DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
