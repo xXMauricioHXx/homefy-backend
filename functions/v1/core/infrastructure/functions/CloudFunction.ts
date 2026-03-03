@@ -16,6 +16,7 @@ export class CloudFunction {
     return {
       region: "southamerica-east1",
       memory: "1GiB",
+      cors: true,
       timeoutSeconds: 300,
     };
   }
