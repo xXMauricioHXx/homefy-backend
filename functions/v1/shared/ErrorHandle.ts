@@ -9,5 +9,7 @@ export const handleError = (res: any, error: unknown, context: string) => {
   }
   const message = error instanceof Error ? error.message : "Unknown error";
   console.error(`[ERROR] ${context}:`, message);
+  console.error(`[ERROR STACK] ${context}:`, (error as any)?.stack);
+  console.error(`[ERROR STACK] ${error}`);
   res.status(500).json({ error: "Internal server error" });
 };

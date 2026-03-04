@@ -1,0 +1,846 @@
+openapi: 3.0.3
+info:
+  title: Mada API – V1
+  description: REST API for the Mada platform (homefy-backend). Firebase Cloud Functions deployed to `southamerica-east1`.
+  version: "1.0.0"
+
+servers:
+  - url: https://southamerica-east1-{project}.cloudfunctions.net
+    description: Firebase Cloud Functions (production)
+    variables:
+      project:
+        default: mada-app
+        description: Firebase project ID
+
+# ---------- Security ----------
+security:
+  - firebaseAuth: []
+
+components:
+  securitySchemes:
+    firebaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID Token
+      description: Firebase Authentication ID token passed as `Authorization: Bearer <token>`.
+    stripeSignature:
+      type: apiKey
+      in: header
+      name: stripe-signature
+      description: Stripe webhook signature used to verify event authenticity.
+
+  # ---------- Schemas ----------
+  schemas:
+    # ── Shared / Error ──
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+      required: [error]
+
+    # ── Users ──
+    CreateUserRequest:
+      type: object
+      required: [email, phone]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        name:
+          type: string
+        photoUrl:
+          type: string
+          format: uri
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        photoUrl:
+          type: string
+          format: uri
+
+    Plan:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/PlanType"
+        credits:
+          type: integer
+        stripeCustomerId:
+          type: string
+        stripeSubscriptionId:
+          type: string
+        stripePriceId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: "#/components/schemas/PlanStatus"
+
+    PlanType:
+      type: string
+      enum: [FREE, BASIC, PREMIUM, PREMIUM_PLUS]
+
+    PlanStatus:
+      type: string
+      enum: [active, inactive]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        name:
+          type: string
+          nullable: true
+        photoUrl:
+          type: string
+          format: uri
+          nullable: true
+        plan:
+          $ref: "#/components/schemas/Plan"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ── Properties ──
+    PropertySource:
+      type: object
+      properties:
+        providerKey:
+          type: string
+        url:
+          type: string
+          format: uri
+        fingerprint:
+          type: string
+
+    Brand:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        headline:
+          type: string
+
+    PropertyPricing:
+      type: object
+      properties:
+        priceText:
+          type: string
+        pricePerSqmText:
+          type: string
+        condominiumText:
+          type: string
+        iptuText:
+          type: string
+
+    PropertyDetails:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        areaSqm:
+          type: string
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        parking:
+          type: integer
+          nullable: true
+        pricing:
+          $ref: "#/components/schemas/PropertyPricing"
+        features:
+          type: array
+          items:
+            type: string
+        infrastructures:
+          type: array
+          items:
+            type: string
+
+    PropertyStatus:
+      type: string
+      enum: [CREATED, SCRAPING, SCRAPED, CLEANING_IMAGES, ASSETS_READY, ERROR]
+
+    AssetFile:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          nullable: true
+        provider:
+          type: string
+
+    AssetType:
+      type: string
+      enum: [MAIN, GALLERY, HIGHLIGHT]
+
+    AssetStatus:
+      type: string
+      enum: [PENDING, ORIGINAL_UPLOADED, CLEANED, ERROR]
+
+    ImageAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/AssetType"
+        order:
+          type: integer
+        status:
+          $ref: "#/components/schemas/AssetStatus"
+        clean:
+          $ref: "#/components/schemas/AssetFile"
+        original:
+          $ref: "#/components/schemas/AssetFile"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RenditionType:
+      type: string
+      enum: [PDF, GALLERY, SHARE_LINK]
+
+    RenditionStatus:
+      type: string
+      enum: [DRAFT, PROCESSING, READY, ERROR]
+
+    PdfRenditionConfig:
+      type: object
+      properties:
+        theme:
+          type: object
+          properties:
+            primary:
+              type: string
+            secondary:
+              type: string
+        texts:
+          type: object
+          properties:
+            agentName:
+              type: string
+            whatsapp:
+              type: string
+        layout:
+          type: string
+
+    Rendition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/RenditionType"
+        status:
+          $ref: "#/components/schemas/RenditionStatus"
+        config:
+          $ref: "#/components/schemas/PdfRenditionConfig"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+        source:
+          $ref: "#/components/schemas/PropertySource"
+        brand:
+          $ref: "#/components/schemas/Brand"
+        details:
+          $ref: "#/components/schemas/PropertyDetails"
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        imageAssets:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageAsset"
+        renditions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Rendition"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        ownerUserId:
+          type: string
+
+    CreatePropertyRequest:
+      type: object
+      required: [source, brand, details, pricing, images]
+      properties:
+        source:
+          type: object
+          required: [providerKey, url]
+          properties:
+            providerKey:
+              type: string
+            url:
+              type: string
+              format: uri
+        brand:
+          type: object
+          required: [name, location, headline]
+          properties:
+            name:
+              type: string
+            location:
+              type: string
+            headline:
+              type: string
+        details:
+          type: object
+          required: [title, description]
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            areaSqm:
+              type: string
+              nullable: true
+            bedrooms:
+              type: integer
+              nullable: true
+            bathrooms:
+              type: integer
+              nullable: true
+            parking:
+              type: integer
+              nullable: true
+            features:
+              type: array
+              items:
+                type: string
+            infrastructure:
+              type: array
+              items:
+                type: string
+        pricing:
+          type: object
+          properties:
+            priceText:
+              type: string
+            pricePerSqmText:
+              type: string
+            condominiumText:
+              type: string
+            iptuText:
+              type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    UpdatePropertyRequest:
+      type: object
+      properties:
+        brand:
+          type: object
+          properties:
+            location:
+              type: string
+            headline:
+              type: string
+        details:
+          type: object
+          properties:
+            title:
+              type: string
+            description:
+              type: string
+            areaSqm:
+              type: string
+            bedrooms:
+              type: integer
+            bathrooms:
+              type: integer
+            parking:
+              type: integer
+              nullable: true
+            pricing:
+              $ref: "#/components/schemas/PropertyPricing"
+            features:
+              type: array
+              items:
+                type: string
+            infrastructures:
+              type: array
+              items:
+                type: string
+
+    ScrapPropertyRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+
+    CreatePdfRenditionRequest:
+      type: object
+      required: [config]
+      properties:
+        config:
+          $ref: "#/components/schemas/PdfRenditionConfig"
+
+    # ── Billing ──
+    CreateCheckoutSessionRequest:
+      type: object
+      required: [planId]
+      properties:
+        planId:
+          $ref: "#/components/schemas/PlanType"
+
+    CheckoutSessionResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Stripe Checkout redirect URL
+
+    StripeWebhookEvent:
+      type: object
+      description: Raw Stripe webhook event payload. See https://docs.stripe.com/api/events for details.
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: "Event type, e.g. `checkout.session.completed`, `customer.subscription.deleted`, `invoice.paid`."
+        data:
+          type: object
+          properties:
+            object:
+              type: object
+
+# ---------- Paths ----------
+paths:
+  # ═══════════════════════════════════════
+  # USERS
+  # ═══════════════════════════════════════
+  /getUserById:
+    get:
+      operationId: getUserById
+      tags: [Users]
+      summary: Get the authenticated user
+      description: Returns the full user profile for the currently authenticated user (identified by the Firebase Auth UID in the token).
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized – invalid or missing Firebase token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /createUser:
+    post:
+      operationId: createUser
+      tags: [Users]
+      summary: Create a new user
+      description: Registers a new user using the Firebase Auth UID and the provided profile data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /updateUser:
+    put:
+      operationId: updateUser
+      tags: [Users]
+      summary: Update user profile
+      description: Updates optional profile fields (name, photoUrl) for the authenticated user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "204":
+          description: User updated successfully (no content)
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ═══════════════════════════════════════
+  # PROPERTIES
+  # ═══════════════════════════════════════
+  /listProperties:
+    get:
+      operationId: listProperties
+      tags: [Properties]
+      summary: List user properties
+      description: Returns all properties owned by the authenticated user.
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /getProperty/{id}:
+    get:
+      operationId: getProperty
+      tags: [Properties]
+      summary: Get a property by ID
+      description: Returns a single property by its unique identifier.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Property found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /createProperty:
+    post:
+      operationId: createProperty
+      tags: [Properties]
+      summary: Create a new property
+      description: Creates a new property listing for the authenticated user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePropertyRequest"
+      responses:
+        "201":
+          description: Property created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /updateProperty/{id}:
+    put:
+      operationId: updateProperty
+      tags: [Properties]
+      summary: Update a property
+      description: Updates brand and/or details for an existing property.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePropertyRequest"
+      responses:
+        "204":
+          description: Property updated (no content)
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Property not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /scrapProperty:
+    post:
+      operationId: scrapProperty
+      tags: [Properties]
+      summary: Scrape property data from URL
+      description: >
+        Accepts a real-estate listing URL and scrapes the property data 
+        (title, images, pricing, etc.) from the supported provider.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScrapPropertyRequest"
+      responses:
+        "200":
+          description: Scraped property data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /createPdfRendition/{propertyId}:
+    post:
+      operationId: createPdfRendition
+      tags: [Properties]
+      summary: Create a PDF rendition
+      description: Generates a PDF rendition for a property using the provided configuration (theme, texts, layout).
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePdfRenditionRequest"
+      responses:
+        "201":
+          description: Rendition created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rendition"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ═══════════════════════════════════════
+  # BILLING
+  # ═══════════════════════════════════════
+  /createCheckoutSession:
+    post:
+      operationId: createCheckoutSession
+      tags: [Billing]
+      summary: Create a Stripe Checkout session
+      description: Creates a Stripe Checkout session for the given plan. Returns a URL the client should redirect to.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckoutSessionRequest"
+      responses:
+        "201":
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSessionResponse"
+        "400":
+          description: Missing or invalid planId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /webhookHandlers:
+    post:
+      operationId: webhookHandlers
+      tags: [Billing]
+      summary: Stripe webhook handler
+      description: |
+        Receives Stripe webhook events. Handled event types:   
+        - `checkout.session.completed` – activates the user's subscription  
+        - `customer.subscription.created` / `customer.subscription.updated` – subscription lifecycle  
+        - `customer.subscription.deleted` – cancels the plan  
+        - `invoice.paid` – records successful payment
+      security:
+        - stripeSignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StripeWebhookEvent"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Webhook processed
+        "400":
+          description: Missing parameters or invalid signature
+          content:
+            text/plain:
+              schema:
+                type: string
+        "405":
+          description: Method not allowed
+          content:
+            text/plain:
+              schema:
+                type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

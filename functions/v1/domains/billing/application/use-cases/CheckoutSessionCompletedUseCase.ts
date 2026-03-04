@@ -1,17 +1,12 @@
 import { UserRepository } from "../../infrastructure/repositories/UserRepository";
 import { CheckoutSessionCompletedDto } from "../dto/BillingDtos";
+import { PLANS } from "../../../../core/domain/constants/plan";
 
 export class CheckoutSessionCompletedUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
   async execute(input: CheckoutSessionCompletedDto): Promise<void> {
-    const {
-      userId,
-      stripeSubscriptionId,
-      stripeCustomerId,
-      planId,
-      stripePriceId,
-    } = input;
+    const { userId, stripeSubscriptionId, stripeCustomerId, planId } = input;
 
     console.log("[START] Processing for userId:", userId);
 
@@ -22,11 +17,17 @@ export class CheckoutSessionCompletedUseCase {
       throw new Error(`User not found: ${userId}`);
     }
 
+    const priceId = PLANS[planId].priceId;
+
+    if (!priceId) {
+      throw new Error(`Invalid plan ID: ${planId}`);
+    }
+
     user.plan.setStripeData(
       planId,
       stripeCustomerId,
       stripeSubscriptionId,
-      stripePriceId,
+      priceId,
     );
 
     await this.userRepository.save(user);

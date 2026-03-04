@@ -5,7 +5,6 @@ export interface CheckoutSessionCompletedDto {
   stripeSubscriptionId: string;
   stripeCustomerId: string;
   planId: PlanType;
-  stripePriceId: string;
 }
 
 export interface InvoicePaidDto {

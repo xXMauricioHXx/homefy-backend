@@ -38,6 +38,7 @@ export const createCheckoutSession = onRequest(
 
       return res.status(201).json(session);
     } catch (error) {
+      console.log("[ERROR] - Creating checkout session for user:", error);
       handleError(res, error, "billing.http");
     }
   },
@@ -53,7 +54,6 @@ const handleCheckoutSessionCompleted = async (req: any, res: any) => {
   const clientId = data.client_reference_id;
   const stripeSubscriptionId = data.subscription as string;
   const stripeCustomerId = data.customer as string;
-  const stripePriceId = data.metadata.priceId as string;
   const checkoutStatus = data.status;
   const userId = data.metadata.userId;
   const planId = data.metadata.planId as PlanType;
@@ -79,7 +79,6 @@ const handleCheckoutSessionCompleted = async (req: any, res: any) => {
     userId,
     stripeSubscriptionId,
     stripeCustomerId,
-    stripePriceId,
   });
 
   res.status(200).send("Webhook processed");
