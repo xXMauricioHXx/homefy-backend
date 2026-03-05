@@ -4,7 +4,7 @@ export interface ScrapedBrand {
   headline: string;
 }
 
-export interface ScrapedProperty {
+export interface ScrapedDetails {
   title: string;
   description: string;
   features: string[];
@@ -13,12 +13,13 @@ export interface ScrapedProperty {
   bedrooms: string;
   bathrooms: string;
   parking: string;
-  pricing: {
-    priceText: string;
-    pricePerSqmText: string;
-    condominiumText: string;
-    iptuText: string;
-  };
+}
+
+export interface ScrapedPricing {
+  priceText: string;
+  pricePerSqmText: string;
+  condominiumText: string;
+  iptuText: string;
 }
 
 export interface ScrapedSource {
@@ -29,6 +30,7 @@ export interface ScrapedSource {
 export interface ScrapedData {
   source: ScrapedSource;
   brand: ScrapedBrand;
-  property: ScrapedProperty;
+  details: ScrapedDetails;
   images: string[];
+  pricing: ScrapedPricing;
 }

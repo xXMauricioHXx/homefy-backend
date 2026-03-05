@@ -30,7 +30,7 @@ export class AuxiliadoraPredialMapper implements PropertyMapper {
           location: location || "N/D",
           headline: title || "N/D",
         },
-        property: {
+        details: {
           title: title || "N/D",
           description: description || "N/D",
           features: features.slice(0, 10),
@@ -39,12 +39,12 @@ export class AuxiliadoraPredialMapper implements PropertyMapper {
           bedrooms: bedrooms || "N/D",
           bathrooms: bathrooms || "N/D",
           parking: parking || "N/D",
-          pricing: {
-            priceText: price || "N/D",
-            pricePerSqmText: this.calculatePricePerSqm(price, area),
-            condominiumText: condominium || "N/D",
-            iptuText: iptu || "N/D",
-          },
+        },
+        pricing: {
+          priceText: price || "N/D",
+          pricePerSqmText: this.calculatePricePerSqm(price, area),
+          condominiumText: condominium || "N/D",
+          iptuText: iptu || "N/D",
         },
         images,
       };
@@ -290,7 +290,7 @@ export class AuxiliadoraPredialMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -299,12 +299,12 @@ export class AuxiliadoraPredialMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

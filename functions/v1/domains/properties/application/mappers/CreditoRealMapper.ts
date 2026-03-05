@@ -61,7 +61,7 @@ export class CreditoRealMapper implements PropertyMapper {
           location: locationStr || "N/D",
           headline: sobreImovel.type || "Imóvel",
         },
-        property: {
+        details: {
           title: `${sobreImovel.type || "Imóvel"} em ${locationStr}`,
           description: sobreImovel.description || "N/D",
           features: characteristics.slice(0, 10),
@@ -70,12 +70,12 @@ export class CreditoRealMapper implements PropertyMapper {
           bedrooms: features.rooms ? features.rooms.toString() : "N/D",
           bathrooms: features.bathrooms ? features.bathrooms.toString() : "N/D",
           parking: features.parking ? features.parking.toString() : "N/D",
-          pricing: {
-            priceText: price,
-            pricePerSqmText: pricePerSqm,
-            condominiumText: "N/D",
-            iptuText: "N/D",
-          },
+        },
+        pricing: {
+          priceText: price,
+          pricePerSqmText: pricePerSqm,
+          condominiumText: "N/D",
+          iptuText: "N/D",
         },
         images: gallery,
       };
@@ -116,7 +116,7 @@ export class CreditoRealMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -125,12 +125,12 @@ export class CreditoRealMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

@@ -54,7 +54,7 @@ export class FoxterMapper implements PropertyMapper {
           location: city || "N/D",
           headline: product.h1 || product.title || "N/D",
         },
-        property: {
+        details: {
           title: product.h1 || product.title || "N/D",
           description: product.description || "N/D",
           features: product.features?.slice(0, 10) || [],
@@ -63,12 +63,12 @@ export class FoxterMapper implements PropertyMapper {
           bedrooms,
           bathrooms,
           parking,
-          pricing: {
-            priceText: FoxterMapper.formatPrice(product.saleValue),
-            pricePerSqmText: pricePerSqm,
-            condominiumText: product.condominiumAmountValue || "N/D",
-            iptuText: product.iptu || "N/D",
-          },
+        },
+        pricing: {
+          priceText: FoxterMapper.formatPrice(product.saleValue),
+          pricePerSqmText: pricePerSqm,
+          condominiumText: product.condominiumAmountValue || "N/D",
+          iptuText: product.iptu || "N/D",
         },
         images: gallery,
       };
@@ -180,7 +180,7 @@ export class FoxterMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -189,12 +189,12 @@ export class FoxterMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

@@ -43,7 +43,7 @@ export class MultimobMapper implements PropertyMapper {
           location: location || "N/D",
           headline: title,
         },
-        property: {
+        details: {
           title,
           description,
           features: features.slice(0, 10),
@@ -52,12 +52,12 @@ export class MultimobMapper implements PropertyMapper {
           bedrooms: stats.bedrooms || "N/D",
           bathrooms: stats.bathrooms || "N/D",
           parking: stats.parking || "N/D",
-          pricing: {
-            priceText: price,
-            pricePerSqmText: pricePerSqm,
-            condominiumText: condominium,
-            iptuText: iptu,
-          },
+        },
+        pricing: {
+          priceText: price,
+          pricePerSqmText: pricePerSqm,
+          condominiumText: condominium,
+          iptuText: iptu,
         },
         images: gallery,
       };
@@ -331,7 +331,7 @@ export class MultimobMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -340,12 +340,12 @@ export class MultimobMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

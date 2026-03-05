@@ -83,7 +83,7 @@ export class BridgeImoveisMapper implements PropertyMapper {
           location: locationStr,
           headline: name,
         },
-        property: {
+        details: {
           title: name,
           description,
           features:
@@ -93,12 +93,12 @@ export class BridgeImoveisMapper implements PropertyMapper {
           bedrooms: features.bedrooms || "N/D",
           bathrooms: features.bathrooms || "N/D",
           parking: features.parking || "N/D",
-          pricing: {
-            priceText: formattedPrice,
-            pricePerSqmText: pricePerSqm,
-            condominiumText: condominium,
-            iptuText: iptu,
-          },
+        },
+        pricing: {
+          priceText: formattedPrice,
+          pricePerSqmText: pricePerSqm,
+          condominiumText: condominium,
+          iptuText: iptu,
         },
         images: gallery,
       };
@@ -245,7 +245,7 @@ export class BridgeImoveisMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -254,12 +254,12 @@ export class BridgeImoveisMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

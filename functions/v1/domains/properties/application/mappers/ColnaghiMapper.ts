@@ -77,7 +77,7 @@ export class ColnaghiMapper implements PropertyMapper {
         location: `${neighborhood}, ${city}`,
         headline: title || "N/D",
       },
-      property: {
+      details: {
         title: title || "N/D",
         description: description || "N/D",
         features: features.slice(1, features.length),
@@ -86,12 +86,12 @@ export class ColnaghiMapper implements PropertyMapper {
         bedrooms,
         bathrooms: "N/D",
         parking,
-        pricing: {
-          priceText: priceText[priceText.length - 1] || "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: priceText[priceText.length - 1] || "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images,
     };
@@ -128,7 +128,7 @@ export class ColnaghiMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -137,12 +137,12 @@ export class ColnaghiMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };

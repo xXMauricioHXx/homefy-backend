@@ -39,7 +39,7 @@ export class RealizaMapper implements PropertyMapper {
           location: location || "N/D",
           headline: resume,
         },
-        property: {
+        details: {
           title: resume,
           description,
           features,
@@ -48,12 +48,12 @@ export class RealizaMapper implements PropertyMapper {
           bedrooms,
           bathrooms,
           parking,
-          pricing: {
-            priceText: price,
-            pricePerSqmText: pricePerSqm,
-            condominiumText: condominium,
-            iptuText: iptu,
-          },
+        },
+        pricing: {
+          priceText: price,
+          pricePerSqmText: pricePerSqm,
+          condominiumText: condominium,
+          iptuText: iptu,
         },
         images: gallery,
       };
@@ -264,7 +264,7 @@ export class RealizaMapper implements PropertyMapper {
         url: "",
       },
       brand: { name: "N/D", location: "N/D", headline: "N/D" },
-      property: {
+      details: {
         title: "N/D",
         description: "N/D",
         features: [],
@@ -273,12 +273,12 @@ export class RealizaMapper implements PropertyMapper {
         bedrooms: "N/D",
         bathrooms: "N/D",
         parking: "N/D",
-        pricing: {
-          priceText: "N/D",
-          pricePerSqmText: "N/D",
-          condominiumText: "N/D",
-          iptuText: "N/D",
-        },
+      },
+      pricing: {
+        priceText: "N/D",
+        pricePerSqmText: "N/D",
+        condominiumText: "N/D",
+        iptuText: "N/D",
       },
       images: [],
     };
