@@ -18,7 +18,7 @@ export interface CreatePropertyDto {
     bathrooms: number | null;
     parking: number | null;
     features: string[];
-    infrastructure: string[];
+    infrastructures: string[];
   };
   pricing: {
     priceText: string;

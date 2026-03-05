@@ -350,7 +350,7 @@ components:
               type: array
               items:
                 type: string
-            infrastructure:
+            infrastructures:
               type: array
               items:
                 type: string

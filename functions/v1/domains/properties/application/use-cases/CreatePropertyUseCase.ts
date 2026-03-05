@@ -82,7 +82,7 @@ export class CreatePropertyUseCase {
       dto.details.parking || 0,
       dto.pricing,
       dto.details.features,
-      dto.details.infrastructure,
+      dto.details.infrastructures,
     );
 
     console.log("[INFO] - Creating property");
