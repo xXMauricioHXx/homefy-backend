@@ -43,15 +43,6 @@ export class CreatePropertyUseCase {
     console.log("[INFO] - Creating fingerprint");
     const fingerprint = Buffer.from(dto.source.url).toString("hex");
 
-    console.log("[INFO] - Checking if property already exists");
-    const existing =
-      await this.propertyRepository.findByFingerprint(fingerprint);
-
-    if (existing) {
-      console.log("[INFO] - Property already exists");
-      return existing;
-    }
-
     const imageAssets = await this.processImages(
       userId,
       propertyId,
