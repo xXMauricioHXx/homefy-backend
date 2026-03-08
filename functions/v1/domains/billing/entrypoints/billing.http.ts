@@ -164,7 +164,7 @@ export const webhookHandlers = onRequest(
 
     try {
       event = await coreContainer.stripeClient.constructWebhookEvent(
-        req.body,
+        req.rawBody,
         req.headers["stripe-signature"] as string,
         process.env.STRIPE_WEBHOOK_SECRET as string,
       );

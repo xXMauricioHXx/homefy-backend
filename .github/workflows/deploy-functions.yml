@@ -53,7 +53,6 @@ jobs:
       - name: Create functions .env
         env:
           DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
-          DEWATERMARK_API_URL: ${{ secrets.DEWATERMARK_API_URL }}
           HOMEFY_FIREBASE_PROJECT_ID: ${{ secrets.HOMEFY_FIREBASE_PROJECT_ID }}
           HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
           FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
@@ -73,7 +72,6 @@ jobs:
       - name: Deploy to Firebase (functions)
         env:
           DEWATERMARK_API_KEY: ${{ secrets.DEWATERMARK_API_KEY }}
-          DEWATERMARK_API_URL: ${{ secrets.DEWATERMARK_API_URL }}
           HOMEFY_FIREBASE_PROJECT_ID: ${{ secrets.HOMEFY_FIREBASE_PROJECT_ID }}
           HOMEFY_FIREBASE_STORAGE_BUCKET: ${{ secrets.HOMEFY_FIREBASE_STORAGE_BUCKET }}
           FOXTER_IMAGES_BASE_URL: ${{ secrets.FOXTER_IMAGES_BASE_URL }}
