@@ -8,6 +8,7 @@ export interface PdfRenditionConfig {
   theme?: { primary?: string; secondary?: string };
   texts?: { agentName?: string; whatsapp?: string };
   layout?: string;
+  colors?: Record<string, any>;
 }
 
 export interface GalleryRenditionConfig {
