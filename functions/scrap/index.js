@@ -585,11 +585,11 @@ const handleInvoicePaid = async (req, res) => {
 
   const data = req.body.data.object;
 
+  const invoiceId = data.id;
+  const stripeSubscriptionId = data.parent.subscription_details.subscription;
   const stripeCustomerId = data.customer;
-  const stripeSubscriptionId = data.subscription;
   const billingReason = data.billing_reason;
   const stripeEventId = data.id;
-  const invoiceId = data.invoice;
 
   if (
     !stripeCustomerId ||
