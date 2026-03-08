@@ -1,12 +1,10 @@
 export class DewatermarkHttp {
   private apiKey: string;
-  private apiUrl: string;
 
   private static instance: DewatermarkHttp;
 
   constructor() {
     this.apiKey = process.env.DEWATERMARK_API_KEY || "";
-    this.apiUrl = process.env.DEWATERMARK_API_URL || "";
   }
 
   public static getInstance(): DewatermarkHttp {
@@ -18,7 +16,8 @@ export class DewatermarkHttp {
 
   async removeWaterMark(fileBuffer: Buffer): Promise<Buffer> {
     const API_KEY = this.apiKey;
-    const url = this.apiUrl;
+    const url =
+      "https://platform.dewatermark.ai/api/object_removal/v2/erase_watermark";
 
     if (!API_KEY) {
       console.warn(
