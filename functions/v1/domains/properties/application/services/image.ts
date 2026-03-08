@@ -27,10 +27,7 @@ export class ImageService {
     let cleanedBuffer = buffer;
 
     console.log("[INFO] - Checking if dewatermark is enabled");
-    if (
-      process.env.ENABLE_DEWATERMARK === "true" &&
-      userId !== "i5XMe0LL8XZPf4t7KJmwr5fzglo2"
-    ) {
+    if (process.env.ENABLE_DEWATERMARK === "true") {
       console.log("[INFO] - Starting remove water mark");
       cleanedBuffer = await this.dewatermarkHttp.removeWaterMark(buffer);
     }

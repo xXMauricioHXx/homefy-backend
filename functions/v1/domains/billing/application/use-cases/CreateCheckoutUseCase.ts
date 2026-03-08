@@ -33,7 +33,7 @@ export class CreateCheckoutUseCase {
         userId,
         planId,
       },
-      success_url: `${process.env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.FRONTEND_URL}/checkout/success`,
       cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
     });
 
