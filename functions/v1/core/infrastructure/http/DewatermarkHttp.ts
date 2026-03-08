@@ -46,24 +46,32 @@ export class DewatermarkHttp {
         );
       }
 
-      const data = (await response.json()) as unknown as {
-        edited_image: {
-          image: string;
+      const responseText = await response.text();
+
+      try {
+        const data = JSON.parse(responseText) as {
+          edited_image?: {
+            image: string;
+          };
         };
-      };
 
-      if (!data.edited_image || !data.edited_image.image) {
-        throw new Error("Invalid response from Dewatermark API");
+        if (!data.edited_image || !data.edited_image.image) {
+          console.warn(
+            "Invalid response format from Dewatermark API:",
+            responseText,
+          );
+          return fileBuffer;
+        }
+
+        const cleanedImageBase64 = data.edited_image.image;
+        return Buffer.from(cleanedImageBase64, "base64");
+      } catch (parseError) {
+        console.error("Error parsing Dewatermark API response:", responseText);
+        return fileBuffer;
       }
-
-      const cleanedImageBase64 = data.edited_image.image;
-      const cleanedBuffer = Buffer.from(cleanedImageBase64, "base64");
-
-      return cleanedBuffer;
     } catch (error) {
-      console.error("Error removing watermark:", error);
-
-      throw error;
+      console.error("Error removing watermark process:", error);
+      return fileBuffer;
     }
   }
 
